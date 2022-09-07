@@ -1,46 +1,38 @@
 ---
-title: "Fundamentos de la inferencia bayesiana en R y STAN"
-author: "CEPAL - División de Estadísticas Sociales"
+title: "Fundamentos de la inferencia Bayesiana en R y STAN"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
 format: html
 editor: visual
+project:
+  type: website
+  output-dir: docs
 ---
 
 ```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRUE)
 library(printr)
 ```
 
-## Regla de bayes
+## Regla de Bayes
 
-En términos de inferencia para $\boldsymbol{\theta}$, es necesario
-encontrar la distribución de los parámetros condicionada a la
-observación de los datos. Para este fin, es necesario definir la
-distribución conjunta de la variable de interés con el vector de
-parámetros.
+En términos de inferencia para $\boldsymbol{\theta}$, es necesario encontrar la distribución de los parámetros condicionada a la observación de los datos. Para este fin, es necesario definir la distribución conjunta de la variable de interés con el vector de parámetros.
 
 $$
 p(\boldsymbol{\theta},\mathbf{Y})=p(\boldsymbol{\theta})p(\mathbf{Y} \mid \boldsymbol{\theta})
 $$
 
--   La distribución $p(\boldsymbol{\theta})$ se le conoce con el nombre
-    de distribución previa.
+-   La distribución $p(\boldsymbol{\theta})$ se le conoce con el nombre de distribución previa.
 
--   El término $p(\mathbf{Y} \mid \boldsymbol{\theta})$ es la
-    distribución de muestreo, verosimilitud o distribución de los datos.
+-   El término $p(\mathbf{Y} \mid \boldsymbol{\theta})$ es la distribución de muestreo, verosimilitud o distribución de los datos.
 
--   La distribución del vector de parámetros condicionada a los datos
-    observados está dada por
+-   La distribución del vector de parámetros condicionada a los datos observados está dada por
 
     $$
     p(\boldsymbol{\theta} \mid \mathbf{Y})=\frac{p(\boldsymbol{\theta},\mathbf{Y})}{p(\mathbf{Y})}=\frac{p(\boldsymbol{\theta})p(\mathbf{Y} \mid \boldsymbol{\theta})}{p(\mathbf{Y})}
     $$
 
--   A la distribución $p(\boldsymbol{\theta} \mid \mathbf{Y})$ se le
-    conoce con el nombre de distribución ***posterior***. Notesé que el
-    denominador no depende del vector de parámetros y considerando a los
-    datos observados como fijos, corresponde a una constante y puede ser
-    obviada. Por lo tanto, otra representación de la regla de Bayes está
-    dada por
+-   A la distribución $p(\boldsymbol{\theta} \mid \mathbf{Y})$ se le conoce con el nombre de distribución ***posterior***. Nótese que el denominador no depende del vector de parámetros y considerando a los datos observados como fijos, corresponde a una constante y puede ser obviada. Por lo tanto, otra representación de la regla de Bayes está dada por
 
     $$
     p(\boldsymbol{\theta} \mid \mathbf{Y})\propto p(\mathbf{Y} \mid \boldsymbol{\theta})p(\boldsymbol{\theta})
@@ -48,40 +40,24 @@ $$
 
 ## Inferencia Bayesiana.
 
-En términos de estimación, inferencia y predicción, el enfoque Bayesiano
-supone dos momentos o etapas:
+En términos de estimación, inferencia y predicción, el enfoque Bayesiano supone dos momentos o etapas:
 
-1.  **Antes de la recolección de las datos**, en donde el investigador
-    propone, basado en su conocimiento, experiencia o fuentes externas,
-    una distribución de probabilidad previa para el parámetro de
-    interés.
-2.  **Después de la recolección de los datos.** Siguiendo el teorema de
-    Bayes, el investigador actualiza su conocimiento acerca del
-    comportamiento probabilístico del parámetro de interés mediante la
-    distribución posterior de este.
+1.  **Antes de la recolección de las datos**, en donde el investigador propone, basado en su conocimiento, experiencia o fuentes externas, una distribución de probabilidad previa para el parámetro de interés.
+2.  **Después de la recolección de los datos.** Siguiendo el teorema de Bayes, el investigador actualiza su conocimiento acerca del comportamiento probabilístico del parámetro de interés mediante la distribución posterior de este.
 
 ## Modelos uniparamétricos
 
-Los modelos que están definidos en términos de un solo parámetro que
-pertenece al conjunto de los números reales se definen como modelos
-*uniparamétricos*.
+Los modelos que están definidos en términos de un solo parámetro que pertenece al conjunto de los números reales se definen como modelos *uniparamétricos*.
 
 ## Modelo Bernoulli
 
-Suponga que $Y$ es una variable aleatoria con distribución Bernoulli
-dada por:
+Suponga que $Y$ es una variable aleatoria con distribución Bernoulli dada por:
 
 $$
 p(Y \mid \theta)=\theta^y(1-\theta)^{1-y}I_{\{0,1\}}(y)
 $$
 
-Como el parámetro $\theta$ está restringido al espacio $\Theta=[0,1]$,
-entonces es posible formular varias opciones para la distribución previa
-del parámetro. En particular, la distribución uniforme restringida al
-intervalo $[0,1]$ o la distribución Beta parecen ser buenas opciones.
-Puesto que la distribución uniforme es un caso particular de la
-distribución Beta. Por lo tanto la distribución previa del parámetro
-$\theta$ estará dada por
+Como el parámetro $\theta$ está restringido al espacio $\Theta=[0,1]$, entonces es posible formular varias opciones para la distribución previa del parámetro. En particular, la distribución uniforme restringida al intervalo $[0,1]$ o la distribución Beta parecen ser buenas opciones. Puesto que la distribución uniforme es un caso particular de la distribución Beta. Por lo tanto la distribución previa del parámetro $\theta$ estará dada por
 
 ```{=tex}
 \begin{equation}
@@ -89,14 +65,11 @@ p(\theta \mid \alpha,\beta)=
 \frac{1}{Beta(\alpha,\beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1}I_{[0,1]}(\theta).
 \end{equation}
 ```
-y la distribución posterior del parámetro $\theta$ sigue una
-distribución \begin{equation*}
+y la distribución posterior del parámetro $\theta$ sigue una distribución \begin{equation*}
 \theta \mid Y \sim Beta(y+\alpha,\beta-y+1)
 \end{equation*}
 
-Cuando se tiene una muestra aleatoria $Y_1,\ldots,Y_n$ de variables con
-distribución Bernoulli de parámetro $\theta$, entonces la distribución
-posterior del parámetro de interés es
+Cuando se tiene una muestra aleatoria $Y_1,\ldots,Y_n$ de variables con distribución Bernoulli de parámetro $\theta$, entonces la distribución posterior del parámetro de interés es
 
 ```{=tex}
 \begin{equation*}
@@ -107,11 +80,7 @@ posterior del parámetro de interés es
 
 -   Encuesta Nacional de Empleo, Desempleo y Subempleo (ENEMDU) 2020
 
-La ENEMDU es una encuesta de aplicación continua, y la información
-generada de ella permite, además, identificar la magnitud de algunos
-fenómenos socio demográficos, al proporcionar datos e indicadores que
-muestran la situación en la que viven mujeres y hombres dentro de sus
-hogares y viviendas.
+La ENEMDU es una encuesta de aplicación continua, y la información generada de ella permite, además, identificar la magnitud de algunos fenómenos socio demográficos, al proporcionar datos e indicadores que muestran la situación en la que viven mujeres y hombres dentro de sus hogares y viviendas.
 
 ```{r, message=FALSE, echo=TRUE, warning=FALSE}
 library(tidyverse)
@@ -133,11 +102,7 @@ datay <- encuesta %>% filter(etnia_ee == 2) %>%
 addmargins(table(datay$y))
 ```
 
-Un grupo de estadístico experto decide utilizar una distribución previa
-Beta, definiendo los parámetros de la distribución previa como
-$Beta(\alpha=350, \beta=650)$. La distribución posterior del parámetro
-de interés, que representa la probabilidad de estar por debajo de la
-linea de pobreza, es $Beta(347+350, 650-347+927)=Beta(697, 1230)$
+Un grupo de estadístico experto decide utilizar una distribución previa Beta, definiendo los parámetros de la distribución previa como $Beta(\alpha=350, \beta=650)$. La distribución posterior del parámetro de interés, que representa la probabilidad de estar por debajo de la linea de pobreza, es $Beta(347+350, 650-347+927)=Beta(697, 1230)$
 
 ```{r, BernoEj1, echo = FALSE, fig.cap="Distribuciones previas (línea punteada) y posteriores (línea sólida)"}
 library(patchwork)
@@ -171,9 +136,7 @@ qbeta(c(0.025, 0.975),  697, 1230)
 
 ### Práctica en **STAN**
 
-En `STAN` es posible obtener el mismo tipo de inferencia creando cuatro
-cadenas cuya distribución de probabilidad coincide con la distribución
-posterior del ejemplo.
+En `STAN` es posible obtener el mismo tipo de inferencia creando cuatro cadenas cuya distribución de probabilidad coincide con la distribución posterior del ejemplo.
 
 ```{r, eval=FALSE, results='markup'}
 ## Definir el modelo
@@ -275,10 +238,7 @@ ppc_dens_overlay(y = datay$y, y_pred2)
 
 ## Modelo Binomial
 
-Cuando se dispone de una muestra aleatoria de variables con distribución
-Bernoulli $Y_1,\ldots,Y_n$, la inferencia bayesiana se puede llevar a
-cabo usando la distribución Binomial, puesto que es bien sabido que la
-suma de variables aleatorias Bernoulli
+Cuando se dispone de una muestra aleatoria de variables con distribución Bernoulli $Y_1,\ldots,Y_n$, la inferencia Bayesiana se puede llevar a cabo usando la distribución Binomial, puesto que es bien sabido que la suma de variables aleatorias Bernoulli
 
 ```{=tex}
 \begin{equation*}
@@ -292,9 +252,7 @@ sigue una distribución Binomial. Es decir:
 p(S \mid \theta)=\binom{n}{s}\theta^s(1-\theta)^{n-s}I_{\{0,1,\ldots,n\}}(s),
 \end{equation}
 ```
-Nótese que la distribución binomial es un caso general para la
-distribución Bernoulli, cuando $n=1$. Por lo tanto es natural suponer
-que distribución previa del parámetro $\theta$ estará dada por
+Nótese que la distribución binomial es un caso general para la distribución Bernoulli, cuando $n=1$. Por lo tanto es natural suponer que distribución previa del parámetro $\theta$ estará dada por
 
 ```{=tex}
 \begin{equation}
@@ -406,10 +364,7 @@ mcmc_trace(model_Binomial$draws("theta"))
 mcmc_trace(model_Binomial$draws("spred"))
 ```
 
-Cuando se tiene una sucesión de variables aleatorias
-$S_1,\ldots,S_i, \ldots,S_k$ independientes y con distribución
-$Binomial(n_i,\theta)$ para $i=1,\ldots,k$, entonces la distribución
-posterior del parámetro de interés $\theta$ es
+Cuando se tiene una sucesión de variables aleatorias $S_1,\ldots,S_i, \ldots,S_k$ independientes y con distribución $Binomial(n_i,\theta)$ para $i=1,\ldots,k$, entonces la distribución posterior del parámetro de interés $\theta$ es
 
 ```{=tex}
 \begin{equation*}
@@ -418,8 +373,7 @@ posterior del parámetro de interés $\theta$ es
 ```
 ### Práctica en **STAN**
 
-Sea $S_k$ el conteo de personas en condición de pobreza en la $k-ésima$
-provincia en la muestra.
+Sea $S_k$ el conteo de personas en condición de pobreza en la $k-ésima$ provincia en la muestra.
 
 ```{r, message=FALSE, echo=TRUE, warning=FALSE}
 (dataS <- encuesta %>% 
@@ -510,9 +464,7 @@ ppc_dens_overlay(y = dataS$Sd, y_pred2)
 
 ## Modelo Poisson
 
-Suponga que $\mathbf{Y}=\{Y_1,\ldots,Y_n\}$ es una muestra aleatoria de
-variables con distribución Poisson con parámetro $\theta$, la función de
-distribución conjunta o la función de verosimilitud está dada por
+Suponga que $\mathbf{Y}=\{Y_1,\ldots,Y_n\}$ es una muestra aleatoria de variables con distribución Poisson con parámetro $\theta$, la función de distribución conjunta o la función de verosimilitud está dada por
 
 ```{=tex}
 \begin{align*}
@@ -520,13 +472,7 @@ p(\mathbf{Y} \mid \theta)&=\prod_{i=1}^n\frac{e^{-\theta}\theta^{y_i}}{y_i!}I_{\
 &=\frac{e^{-n\theta}\theta^{\sum_{i=1}^ny_i}}{\prod_{i=1}^ny_i!}I_{\{0,1,\ldots\}^n}(y_1,\ldots,y_n)
 \end{align*}
 ```
-donde $\{0,1\ldots\}^n$ denota el producto cartesiano $n$ veces sobre el
-conjunto $\{0,1\ldots\}$. Por otro lado, como el parámetro $\theta$ está
-restringido al espacio $\Theta=(0,\infty)$, entonces es posible formular
-varias opciones para la distribución previa del parámetro. Algunas de
-estas se encuentran considerando la distribución exponencial, la
-distribución Ji-cuadrado o la distribución Gamma. Sea la distribución
-previa del parámetro $\theta$ dada por
+donde $\{0,1\ldots\}^n$ denota el producto cartesiano $n$ veces sobre el conjunto $\{0,1\ldots\}$. Por otro lado, como el parámetro $\theta$ está restringido al espacio $\Theta=(0,\infty)$, entonces es posible formular varias opciones para la distribución previa del parámetro. Algunas de estas se encuentran considerando la distribución exponencial, la distribución Ji-cuadrado o la distribución Gamma. Sea la distribución previa del parámetro $\theta$ dada por
 
 ```{=tex}
 \begin{equation}
@@ -542,8 +488,7 @@ La distribución posterior del parámetro $\theta$ está dada por
 ```
 ### Práctica en **STAN**
 
-Sea $Y$ el conteo de las personas por debajo de la linea de indigencia
-por división geográfica
+Sea $Y$ el conteo de las personas por debajo de la linea de indigencia por división geográfica
 
 ```{r, fig.cap="Resultado en la muestra (puntos azules) y distribución teórica (puntos negros)"}
 dataPois <- encuesta %>% 
@@ -638,24 +583,19 @@ ppc_hist(y = dataPois$yi, y_pred2) +
 
 ## Modelo Normal con media desconocida
 
-Suponga que $Y_1,\cdots,Y_n$ son variables independientes e
-idénticamente distribuidos con distribución $Normal(\theta,\sigma^2)$
-con $\theta$ desconocido pero $\sigma^2$ conocido. De esta forma, la
-función de verosimilitud de los datos está dada por
+Suponga que $Y_1,\cdots,Y_n$ son variables independientes e idénticamente distribuidos con distribución $Normal(\theta,\sigma^2)$ con $\theta$ desconocido pero $\sigma^2$ conocido. De esta forma, la función de verosimilitud de los datos está dada por
 
-```{=tex}
-\begin{align}
-p(\mathbf{Y} \mid \theta)&=\prod_{i=1}^n\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}(y_i-\theta)^2\right\}I_\mathbb{R}(y)\\
+$$
+\begin{align*}
+p(\mathbf{Y} \mid \theta)
+&=\prod_{i=1}^n\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left\{-\frac{1}{2\sigma^2}(y_i-\theta)^2\right\}I_\mathbb{R}(y) \\
 &=(2\pi\sigma^2)^{-n/2}\exp\left\{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\theta)^2\right\}
-\end{align}
-```
-Como el parámetro $\theta$ puede tomar cualquier valor en los reales, es
-posible asignarle una distribución previa
-$\theta \sim Normal(\mu,\tau^2)$. Bajo este marco de referencia se
-tienen los siguientes resultados
+\end{align*}
+$$
 
-La distribución posterior del parámetro de interés $\theta$ sigue una
-distribución
+Como el parámetro $\theta$ puede tomar cualquier valor en los reales, es posible asignarle una distribución previa $\theta \sim Normal(\mu,\tau^2)$. Bajo este marco de referencia se tienen los siguientes resultados
+
+La distribución posterior del parámetro de interés $\theta$ sigue una distribución
 
 ```{=tex}
 \begin{equation*}
@@ -767,31 +707,16 @@ ppc_dens_overlay(y = as.numeric(dataNormal$logIngreso), y_pred2)
 
 # Modelos multiparamétricos
 
--   La distribución normal univariada que tiene dos parámetros: la media
-    $\theta$ y la varianza $\sigma^2$.
--   La distribución multinomial cuyo parámetro es un vector de
-    probabilidades $\boldsymbol{\theta}$.
+-   La distribución normal univariada que tiene dos parámetros: la media $\theta$ y la varianza $\sigma^2$.
+-   La distribución multinomial cuyo parámetro es un vector de probabilidades $\boldsymbol{\theta}$.
 
 ## Modelo Normal con media y varianza desconocida
 
-Supongamos que se dispone de realizaciones de un conjunto de variables
-independientes e idénticamente distribuidas
-$Y_1,\cdots,Y_n\sim N(\theta,\sigma^2)$. Cuando se desconoce tanto la
-media como la varianza de la distribución es necesario plantear diversos
-enfoques y situarse en el más conveniente, según el contexto del
-problema. En términos de la asignación de las distribuciones previas
-para $\theta$ y $\sigma^2$ es posible:
+Supongamos que se dispone de realizaciones de un conjunto de variables independientes e idénticamente distribuidas $Y_1,\cdots,Y_n\sim N(\theta,\sigma^2)$. Cuando se desconoce tanto la media como la varianza de la distribución es necesario plantear diversos enfoques y situarse en el más conveniente, según el contexto del problema. En términos de la asignación de las distribuciones previas para $\theta$ y $\sigma^2$ es posible:
 
--   Suponer que la distribución previa $p(\theta)$ es independiente de
-    la distribución previa $p(\sigma^2)$ y que ambas distribuciones son
-    informativas.
--   Suponer que la distribución previa $p(\theta)$ es independiente de
-    la distribución previa $p(\sigma^2)$ y que ambas distribuciones son
-    no informativas.
--   Suponer que la distribución previa para $\theta$ depende de
-    $\sigma^2$ y escribirla como $p(\theta \mid \sigma^2)$, mientras que
-    la distribución previa de $\sigma^2$ no depende de $\theta$ y se
-    puede escribir como $p(\sigma^2)$.
+-   Suponer que la distribución previa $p(\theta)$ es independiente de la distribución previa $p(\sigma^2)$ y que ambas distribuciones son informativas.
+-   Suponer que la distribución previa $p(\theta)$ es independiente de la distribución previa $p(\sigma^2)$ y que ambas distribuciones son no informativas.
+-   Suponer que la distribución previa para $\theta$ depende de $\sigma^2$ y escribirla como $p(\theta \mid \sigma^2)$, mientras que la distribución previa de $\sigma^2$ no depende de $\theta$ y se puede escribir como $p(\sigma^2)$.
 
 ## Parámetros independientes
 
@@ -809,8 +734,7 @@ Y la distribución previa para el parámetro $\sigma^2$ será
 \sigma^2 \sim Inversa-Gamma(n_0/2,n_0\sigma^2_0/2)
 \end{equation*}
 ```
-Asumiendo independencia previa, la distribución previa conjunta estará
-dada por
+Asumiendo independencia previa, la distribución previa conjunta estará dada por
 
 ```{=tex}
 \begin{equation}
@@ -818,8 +742,7 @@ p(\theta,\sigma^2)\propto (\sigma^2)^{-n_0/2-1}\exp\left\{-\dfrac{n_0\sigma^2_0}
 \exp\left\{-\frac{1}{2\tau^2}(\theta-\mu)^2\right\}
 \end{equation}
 ```
-La distribución posterior conjunta de los parámetros de interés está
-dada por
+La distribución posterior conjunta de los parámetros de interés está dada por
 
 ```{=tex}
 \begin{align}
@@ -835,9 +758,7 @@ La distribución posterior condicional de $\theta$ es
 \theta  \mid  \sigma^2,\mathbf{Y} \sim Normal(\mu_n,\tau_n^2)
 \end{equation}
 ```
-En donde las expresiones para $\mu_n$ y $\tau_n^2$ están dadas por
-\@ref(eq:TauSigman). Por otro lado, la distribución posterior
-condicional de $\sigma^2$ es
+En donde las expresiones para $\mu_n$ y $\tau_n^2$ están dadas por \@ref(eq:TauSigman). Por otro lado, la distribución posterior condicional de $\sigma^2$ es
 
 ```{=tex}
 \begin{equation}
@@ -947,13 +868,7 @@ ppc_dens_overlay(y = as.numeric(dataNormal$logIngreso), y_pred2)
 
 ## Modelo Multinomial
 
-En esta sección discutimos el modelamiento bayesiano de datos
-provenientes de una distribución multinomial que corresponde a una
-extensión multivariada de la distribución binomial. Suponga que
-$\textbf{Y}=(Y_1,\ldots,Y_p)'$ es un vector aleatorio con distribución
-multinomial, así, su distribución está parametrizada por el vector
-$\boldsymbol{\theta}=(\theta_1,\ldots,\theta_p)'$ y está dada por la
-siguiente expresión
+En esta sección discutimos el modelamiento bayesiano de datos provenientes de una distribución multinomial que corresponde a una extensión multivariada de la distribución binomial. Suponga que $\textbf{Y}=(Y_1,\ldots,Y_p)'$ es un vector aleatorio con distribución multinomial, así, su distribución está parametrizada por el vector $\boldsymbol{\theta}=(\theta_1,\ldots,\theta_p)'$ y está dada por la siguiente expresión
 
 ```{=tex}
 \begin{equation}
@@ -967,12 +882,7 @@ Donde
 \binom{n}{y_1,\ldots,y_p}=\frac{n!}{y_1!\cdots y_p!}.
 \end{equation*}
 ```
-Como cada parámetro $\theta_i$ está restringido al espacio
-$\Theta=[0,1]$, entonces es posible asignar a la distribución de
-Dirichlet como la distribución previa del vector de parámetros. Por lo
-tanto la distribución previa del vector de parámetros
-$\boldsymbol{\theta}$, parametrizada por el vector de hiperparámetros
-$\boldsymbol{\alpha}=(\alpha_1,\ldots,\alpha_p)'$, está dada por
+Como cada parámetro $\theta_i$ está restringido al espacio $\Theta=[0,1]$, entonces es posible asignar a la distribución de Dirichlet como la distribución previa del vector de parámetros. Por lo tanto la distribución previa del vector de parámetros $\boldsymbol{\theta}$, parametrizada por el vector de hiperparámetros $\boldsymbol{\alpha}=(\alpha_1,\ldots,\alpha_p)'$, está dada por
 
 ```{=tex}
 \begin{equation}
@@ -980,8 +890,7 @@ p(\boldsymbol{\theta} \mid \boldsymbol{\alpha})=\frac{\Gamma(\alpha_1+\cdots+\al
   \prod_{i=1}^p\theta_i^{\alpha_i-1} \ \ \ \ \ \alpha_i>0 \texttt{ y } \sum_{i=1}^p\theta_i=1
 \end{equation}
 ```
-La distribución posterior del parámetro $\boldsymbol{\theta}$ sigue una
-distribución $Dirichlet(y_1+\alpha_1,\ldots,y_p+\alpha_p)$
+La distribución posterior del parámetro $\boldsymbol{\theta}$ sigue una distribución $Dirichlet(y_1+\alpha_1,\ldots,y_p+\alpha_p)$
 
 ### Práctica en **STAN**
 
