@@ -11,17 +11,25 @@ data {
 parameters {
   vector[k] beta;         // coeficientes del modelo
   vector[kz] u;         // coeficientes del modelo
-  real <lower = 0> sigma;
+  real <lower = 0> sigma2;
+  
 }
 
 transformed parameters{
  vector[N] mu;
+ real<lower=0> sigma;
+ sigma = sqrt(sigma2);
  mu =  X*beta + Z * u;
 }
 
 model {
   beta ~ normal(0,100);
   u ~ normal(0,1000);
-  sigma ~ cauchy(0,100);
+  sigma2 ~ inv_gamma(0.0001, 0.0001);
   y ~ normal(mu , sigma);
+}
+
+generated quantities {
+    real ypred[N];                    // vector de longitud n
+    ypred =  normal_rng(mu , sigma);
 }

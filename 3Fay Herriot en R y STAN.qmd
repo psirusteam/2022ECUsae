@@ -71,7 +71,8 @@ Estimacion_dir %<>%
       1,
       thetahat_deff
     ),
-    provincia = substr(canton, 1, 2)
+    provincia = substr(canton, 1, 2),
+    
   ) %>%
   select(provincia, canton:urban.coverfraction) %>%
   arrange(thetahat_se)
@@ -111,7 +112,7 @@ data_syn <-
 cor(data_dir$thetahat, data_dir$tasa_desocupacion)
 cor(data_dir$thetahat, log(data_dir$stable_lights))
 cor(data_dir$thetahat, log(data_dir$crops.coverfraction))
-cor(data_dir$thetahat, data_dir$urban.coverfraction)
+cor(data_dir$thetahat, log(data_dir$urban.coverfraction))
 ```
 
 ### Modelo bayesiano 

@@ -21,6 +21,7 @@ transformed parameters{
   real<lower=0> sigma_v;
   theta = X * beta + v;
   sigma_v = sqrt(sigma2_v);
+  
 }
 
 model {

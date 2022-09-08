@@ -8,6 +8,7 @@ parameters {
 }
 transformed parameters {
   real delta;
+  delta = theta[1] + theta[2];
 }
 model {
   y ~ multinomial(theta);
@@ -15,7 +16,7 @@ model {
 }
 generated quantities {
   int ypred[k];
-  ypred = multinomial_rng(theta, 100);
+  ypred = multinomial_rng(theta, sum(y));
 }
 
 

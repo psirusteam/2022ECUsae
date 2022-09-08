@@ -7,11 +7,10 @@ data {
 }
 parameters {
   vector[K] beta;       // coefficients for predictors
-  real<lower=0> sigma;  // error scale
 }
 transformed parameters {
    vector[D] eta;
-   eta = x * beta;
+   eta =  x * beta;
    }
 
 model {

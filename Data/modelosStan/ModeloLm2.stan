@@ -6,11 +6,16 @@ data {
 }
 parameters {
   vector[K] beta;       // coefficients for predictors
-  real<lower=0> sigma;  // error scale
+  real<lower=0> sigma2;  // error scale
 }
+transformed parameters{
+  real<lower=0> sigma;
+  sigma = sqrt(sigma2);
+}
+
 model {
-  to_vector(beta) ~ normal(250, 10000);
-  sigma ~ cauchy(1, 100); 
+  to_vector(beta) ~ normal(0, 10000);
+  sigma2 ~ inv_gamma(0.0001, 0.0001);
   y ~ normal(x * beta, sigma);  // likelihood
 }
 generated quantities {
