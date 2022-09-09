@@ -1,0 +1,298 @@
+---
+title: "Estimación del ingreso medio"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
+format: html
+editor: visual
+project:
+  type: website
+  output-dir: docs
+---
+
+```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(printr)
+```
+
+### Cargando las librerias requeridas.
+
+```{r}
+rm(list =ls())
+library(rstan)
+library(rstanarm)
+library(tidyverse)
+library(stringr)
+library(scales)
+library(bayesplot)
+library(gridExtra)
+library(gridExtra)
+library(scales)
+library(kableExtra)
+library(formatR)
+library(patchwork)
+```
+
+### Importando datos
+
+```{r}
+source("0Funciones/funciones_mrp.R")
+encuesta_mrp <- readRDS("Data/encuesta_ingreso.rds")
+tasa_desocupados <- readRDS("Data/tasa_desocupacion.rds")
+
+```
+
+### Explorando datos.
+
+```{r}
+summary(encuesta_mrp$ingreso)
+encuesta_mrp$ingreso <- encuesta_mrp$ingreso + 1
+head(encuesta_mrp) %>% data.frame()
+```
+
+### Covariables provenientes del censo e imagenes satelitales
+
+```{r}
+statelevel_predictors_df <- tasa_desocupados
+head(statelevel_predictors_df)
+```
+
+### Niveles de agregación para colapsar encuesta
+
+```{r}
+byAgrega <-
+  grep(
+    pattern =  "^(n|pobreza|ingreso|lp|li|fep)",
+    x = names(encuesta_mrp),
+    invert = TRUE,
+    value = TRUE
+  )
+```
+
+### Creando base con la encuesta agregada
+
+```{r}
+encuesta_df_agg <-
+  encuesta_mrp %>%
+  group_by_at(all_of(byAgrega)) %>%
+  summarise(n = n(),
+            ingreso = mean(ingreso),
+            .groups = "drop") %>% 
+   arrange(desc(n))
+head(encuesta_df_agg)
+```
+
+### Incorporando covariables a la encuesta agregada
+
+```{r}
+encuesta_df_agg <- inner_join(encuesta_df_agg, statelevel_predictors_df, by = "depto")
+```
+
+### Definiendo el modelo multinivel.
+
+```{r, eval = FALSE}
+options(MC.cores=parallel::detectCores())
+fit <- stan_lmer(
+  ingreso ~ (1 | depto) +
+    area + sexo  + tasa_desocupacion +
+      F182013_stable_lights + 
+  X2016_crops.coverfraction +
+  X2016_urban.coverfraction ,
+                  weights = n,
+                  data = encuesta_df_agg,
+                  verbose = TRUE,
+                  chains = 2,
+                 iter = 200
+                )
+
+```
+
+# Proceso de estimación y predicción
+
+Por tiempo de compilación se realiza el cargue del modelo estimado.
+
+```{r}
+fit <- readRDS("Data/fit_ingresos.rds")
+fit
+```
+
+### Predicción en el censo
+
+```{r}
+poststrat_df <- readRDS("Data/poststrat_ingreso.RDS") %>% 
+  filter(!anoest %in% c("99", "98") ) %>%
+  select(depto:X2016_urban.coverfraction,lp)
+poststrat_df %>% arrange(desc(n)) %>% head()
+```
+
+### Distribución posterior.
+
+```{r}
+epred_mat <- posterior_epred(fit, newdata = poststrat_df, type = "response")
+dim(epred_mat)
+dim(poststrat_df)
+```
+
+### Evaluando las predicciones resultantes
+
+```{r, eval=FALSE}
+## validacion de los valores posteriores
+summary(rowMeans(epred_mat))
+summary(colMeans(epred_mat))
+
+summary(as.numeric(epred_mat))
+hist(as.numeric(epred_mat))
+
+length(epred_mat[which(epred_mat < 0)])
+```
+
+Igualando valores negativos a cero.
+
+```{r}
+epred_mat[(epred_mat < 0)]<-0
+length(epred_mat[which(epred_mat < 0)])
+```
+
+Obteniendo las lineas de pobreza por cada post-estrato
+
+```{r}
+(lp <- encuesta_mrp %>% distinct(area, lp))
+```
+
+```{r}
+lp <-   poststrat_df %>% mutate(orden = 1:n()) %>%
+        select(orden, area) %>%
+        left_join(lp, by = "area") %>%
+        arrange(orden, desc = FALSE) %>%
+        select(lp)
+lp <- lp$lp
+```
+
+### Ingreso en términos de lineas de pobreza.
+
+```{r}
+epred_mat <- t(t(epred_mat)/lp)
+```
+
+### Estimación del ingreso medio NACIONAL
+
+```{r}
+n_filtered <- poststrat_df$n
+mrp_estimates <- epred_mat %*% n_filtered / sum(n_filtered)
+
+data.frame(
+  mrp_estimate = mean(mrp_estimates),
+  mrp_estimate_se = sd(mrp_estimates)
+) 
+```
+
+### Estimación para depto == "01" particular.
+
+```{r}
+temp <- poststrat_df %>%  mutate(Posi = 1:n())
+temp <- filter(temp,depto=="01") %>% select(n,Posi)
+n_filtered <- temp$n
+temp_epred_mat <- epred_mat[,temp$Posi]
+## Estimando el CME
+mrp_estimates <- temp_epred_mat %*% n_filtered / sum(n_filtered)
+
+data.frame(
+  mrp_estimate = mean(mrp_estimates),
+  mrp_estimate_se = sd(mrp_estimates)
+)
+```
+
+### Estimación para depto == "01" y sexo == "1"
+
+```{r}
+temp <- poststrat_df %>%  mutate(Posi = 1:n())
+temp <- filter(temp,depto=="01", sexo == "1") %>% select(n,Posi)
+n_filtered <- temp$n
+temp_epred_mat <- epred_mat[,temp$Posi]
+## Estimando el CME
+mrp_estimates <- temp_epred_mat %*% n_filtered / sum(n_filtered)
+
+data.frame(
+  mrp_estimate = mean(mrp_estimates),
+  mrp_estimate_se = sd(mrp_estimates)
+)
+```
+
+### Estimación para depto == "01", sexo == "1" y area == "1"
+
+```{r}
+temp <- poststrat_df %>%  mutate(Posi = 1:n())
+temp <- filter(temp,depto=="01", sexo == "1", area == "1") %>% select(n,Posi)
+n_filtered <- temp$n
+temp_epred_mat <- epred_mat[,temp$Posi]
+## Estimando el CME
+mrp_estimates <- temp_epred_mat %*% n_filtered / sum(n_filtered)
+
+data.frame(
+  mrp_estimate = mean(mrp_estimates),
+  mrp_estimate_se = sd(mrp_estimates)
+)
+
+```
+
+```{r, eval=TRUE}
+# Resultados nacionales ---------------------------------------------------
+(mrp_estimate_Ingresolp <-
+  Aux_Agregado(poststrat = poststrat_df,
+             epredmat = epred_mat,
+             byMap = NULL)
+)
+```
+
+## Automatizando el proceso
+
+### Niveles de Post-estrato
+
+```{r}
+byAgrega <-
+  grep(
+    pattern =  "^(X|F|n|pobreza|ingreso|tasa_desocupacion|epred_mat|depto|lp)",
+    x = names(poststrat_df),
+    invert = TRUE,
+    value = TRUE
+  )
+byAgrega
+```
+
+### Organizando los post-estato
+
+```{r, eval=TRUE}
+byAgrega <- t(combn(byAgrega, 2))
+byAgrega <- rbind(c("depto","depto" ), byAgrega)
+```
+
+### Realizando la estimación
+
+```{r, eval=TRUE}
+mrp_ECM <- map(1:nrow(byAgrega), function(ii) {
+  Aux_Agregado(poststrat_df,
+               epredmat = epred_mat,
+               byMap = c("depto", byAgrega[ii,]))
+  
+})
+```
+
+### Asignando nombre las tablas de salida
+
+```{r, eval=TRUE}
+nom_tabs <-
+  c("depto", apply(byAgrega[-1, ],
+                   MARGIN = 1,
+                   paste0, collapse = "_"))
+names(mrp_ECM) <- nom_tabs
+map(mrp_ECM,head)
+```
+
+## Algunos mapas resultantes
+
+### Ingreso medio Área - Etnia - Depto
+
+![](Data/images/Ingreso_Area_etnia.png){width="30cm" height="25cm"}
+
+### Ingreso medio Años de escolaridad - Etnia - Depto
+
+![](Data/images/Ingreso_Anoest_etnia.png){width="30cm" height="25cm"}
