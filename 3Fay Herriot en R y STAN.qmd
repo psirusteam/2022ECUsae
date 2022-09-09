@@ -122,7 +122,7 @@ Y \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
 \mu = \boldsymbol{X\beta} + V
 $$ donde $V \sim N(0 , \sigma_v)$.
 
-Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
+Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
 \beta_k \sim N(\mu, \tau^2)\\
@@ -368,7 +368,7 @@ Z \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
 \theta = \left(sin(\mu)\right)^2
 $$ donde $V \sim N(0 , \sigma_v)$.
 
-Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
+Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
 \beta_k \sim N(\mu, \tau^2)\\
@@ -526,7 +526,7 @@ $$
 \mu = \boldsymbol{X\beta} + V 
 $$ con $V \sim N(0 , \sigma_v)$ y \$\phi = \$
 
-Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
+Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
 \beta_k \sim N(\mu, \tau^2)\\
@@ -658,6 +658,7 @@ Comparando las predicciones de los modelos arcsin y beta
 ```{r, eval=TRUE}
 theta_FH_pred <-
   model_FH_beta$summary(variables =  "thetapred")
+
 data_syn %<>% mutate(pred_beta = theta_FH_pred$mean)
 ggplot(data = data_syn, aes(x = pred_beta)) +
   geom_density(size = 1.5, color = "red") +
@@ -689,8 +690,7 @@ model_FH_beta$summary(
   mcmc_trace(model_FH_beta$draws("sigma2_v"))
 ```
 
-
-### Creando el mapa con los resultados. 
+### Creando el mapa con los resultados.
 
 ```{r}
 library(sp)
@@ -718,5 +718,6 @@ Mapa_lp <-
     palette = "-YlOrRd"
   ) + tm_layout(asp = 0)
 
-```
+Mapa_lp
 
+```

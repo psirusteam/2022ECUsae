@@ -17,3 +17,6 @@ cmdstanr
 posterior
 bayesplot
 patchwork
+sp
+sf
+tmap
