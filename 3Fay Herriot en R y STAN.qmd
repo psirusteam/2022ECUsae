@@ -1,7 +1,12 @@
 ---
 title: "Fay Herriot en R y STAN"
-author: "CEPAL - División de Estadísticas Sociales"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
 format: html
+editor: visual
+project:
+  type: website
+  output-dir: docs
 ---
 
 ```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}
@@ -9,12 +14,11 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, cache = TRU
 library(printr)
 ```
 
-# Estimación de Fay Herriot normal. 
+# Estimación de Fay Herriot normal.
 
-- El estimador directo no es el único insumo del modelo de áreas de Fay-Herriot; también lo es su varianza. El estimador puntual da un indicio de la localización del parámetro, y su varianza presenta el nivel de certeza o confianza sobre esta localización.
+-   El estimador directo no es el único insumo del modelo de áreas de Fay-Herriot; también lo es su varianza. El estimador puntual da un indicio de la localización del parámetro, y su varianza presenta el nivel de certeza o confianza sobre esta localización.
 
-- Al tratar con cifras provenientes de procesamientos con encuestas de hogares, es indispensable siempre tener en cuenta que el sustento inferencial recae en la estrategia de muestreo, definida como la dupla compuesta por el diseño de muestreo y el estimador escogido.
-
+-   Al tratar con cifras provenientes de procesamientos con encuestas de hogares, es indispensable siempre tener en cuenta que el sustento inferencial recae en la estrategia de muestreo, definida como la dupla compuesta por el diseño de muestreo y el estimador escogido.
 
 ## Datos de la encuesta
 
@@ -35,7 +39,7 @@ encuesta <- readRDS("Data/encuestaECU20N.rds") %>%
     ) 
 ```
 
-Definir el diseño muestral 
+Definir el diseño muestral
 
 ```{r}
 library(survey)
@@ -51,7 +55,7 @@ diseno <-
 
 ```
 
-Estimación directa 
+Estimación directa
 
 $$
 \hat{\bar{Y}}_d = \frac{1}{\hat{N}_d} \sum_{s_d}w_{k}y_{k}
@@ -80,7 +84,7 @@ Estimacion_dir %<>%
 head(Estimacion_dir)
 ```
 
-Gráfico de la desviación estándar. 
+Gráfico de la desviación estándar.
 
 ```{r, echo=FALSE}
 ggplot(Estimacion_dir,
@@ -94,11 +98,7 @@ ggplot(Estimacion_dir,
 
 ```
 
-
-
-
-
-Dividiendo los datos en observados y NO observados. 
+Dividiendo los datos en observados y NO observados.
 
 ```{r}
 data_dir <- Estimacion_dir %>%
@@ -115,13 +115,12 @@ cor(data_dir$thetahat, log(data_dir$crops.coverfraction))
 cor(data_dir$thetahat, log(data_dir$urban.coverfraction))
 ```
 
-### Modelo bayesiano 
+### Modelo bayesiano
 
 $$
 Y \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
 \mu = \boldsymbol{X\beta} + V
-$$
-donde $V \sim N(0 , \sigma_v)$. 
+$$ donde $V \sim N(0 , \sigma_v)$.
 
 Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
@@ -225,7 +224,6 @@ sample_data <- list(
   sigma_e = as.numeric(data_dir$thetahat_se)   # Error de estimación
                     )
 ```
-  
 
 Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
 
@@ -258,8 +256,7 @@ y_pred2 <- y_pred_B[rowsrandom, 1:N1]
 ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) 
 ```
 
-###  Adicionando más covariables modelo. 
-
+### Adicionando más covariables modelo.
 
 ```{r}
 Xdat <-
@@ -306,7 +303,6 @@ sample_data <- list(
   sigma_e = as.numeric(data_dir$thetahat_se)   # Error de estimación
                     )
 ```
-  
 
 Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
 
@@ -333,7 +329,6 @@ y_pred2 <- y_pred_B[rowsrandom, 1:N1]
 ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) 
 ```
 
-
 Comparando estimación directa y predicción de FH
 
 ```{r, eval=TRUE}
@@ -342,22 +337,19 @@ plot(theta_FH$mean, data_dir$thetahat)
 abline(b=1,a=0, col = "red")
 ```
 
-# Estimación de Fay Herriot arcsin. 
+# Estimación de Fay Herriot arcsin.
 
-En su concepción más básica, el modelo de **FH** es una combinación lineal de covariables. Sin embargo, el resultado de esta combinación pueden tomar valores que se salen del rango aceptable en el que puede estar una proporción; es decir, en general el estimador de Fay-Herriot $\theta \in R$, mientras que el estimador directo $\theta \in (0,1)$.  
+En su concepción más básica, el modelo de **FH** es una combinación lineal de covariables. Sin embargo, el resultado de esta combinación pueden tomar valores que se salen del rango aceptable en el que puede estar una proporción; es decir, en general el estimador de Fay-Herriot $\theta \in R$, mientras que el estimador directo $\theta \in (0,1)$.
 
-
-Transformación arcoseno  
+Transformación arcoseno
 
 $$
 \hat{z}_d = arcsin\left( \sqrt{ \hat{\theta}_d} \right)
-$$
-donde 
-$$
+$$ donde $$
 Var\left( \hat{z}_d \right) = \frac{\widehat{DEFF}_d}{4\times n_d} = \frac{1}{4\times n_{d,efectivo} }
 $$
 
-Estimación directa 
+Estimación directa
 
 ```{r}
 data_dir %<>% mutate(
@@ -368,14 +360,13 @@ data_dir %<>% mutate(
 
 ```
 
-### Modelo bayesiano 
+### Modelo bayesiano
 
 $$
 Z \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
 \mu = \boldsymbol{X\beta} + V \\
 \theta = \left(sin(\mu)\right)^2
-$$
-donde $V \sim N(0 , \sigma_v)$. 
+$$ donde $V \sim N(0 , \sigma_v)$.
 
 Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
@@ -383,8 +374,6 @@ $$
 \beta_k \sim N(\mu, \tau^2)\\
 \sigma^2_v \sim Inversa-Gamma(\alpha_1,\alpha_2)
 $$
-
-
 
 Creando código de `STAN`
 
@@ -438,15 +427,11 @@ generated quantities{
 
 ```
 
-
-
-
 Preparando el código de `STAN`
 
 ```{r, eval=TRUE}
 fit_FH_arcsin_Nornal <- cmdstan_model("Data/modelosStan/FH_arcsin_normal.stan")
 ```
-
 
 ```{r}
 sample_data <- list(N1 = nrow(data_dir),
@@ -458,7 +443,6 @@ sample_data <- list(N1 = nrow(data_dir),
                     sigma_e = sqrt(data_dir$varhat)
                     )
 ```
-  
 
 Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
 
@@ -486,7 +470,6 @@ ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) +
   xlim(-0.2,1.2)
 ```
 
-
 ```{r, eval=TRUE}
 library(ggplot2)
 theta_FH <- model_FH_arcsin_Nornal$summary(variables =  "theta")
@@ -513,7 +496,7 @@ ggplot(data = data_syn, aes(x = pred_arcsin)) +
   theme_bw(base_size = 20)
 ```
 
-Estimación de los parámetros 
+Estimación de los parámetros
 
 ```{r, eval=TRUE}
 model_FH_arcsin_Nornal$summary(
@@ -528,23 +511,20 @@ library(bayesplot)
   mcmc_trace(model_FH_arcsin_Nornal$draws("sigma2_v"))
 ```
 
-# Estimación de Fay Herriot beta 
+# Estimación de Fay Herriot beta
 
-
-### Modelo bayesiano 
+### Modelo bayesiano
 
 $$
 Y \mid a,b \sim beta(a, b)\\
 a = \theta * \phi\\
 b = (1 - \theta) * \phi\\
-$$
-donde 
+$$ donde
 
 $$
 \theta = \frac{\exp{\left(\mu\right)}}{ 1+ \exp{\left(\mu\right)}}\\   
 \mu = \boldsymbol{X\beta} + V 
-$$
-con $V \sim N(0 , \sigma_v)$ y $\phi = $
+$$ con $V \sim N(0 , \sigma_v)$ y \$\phi = \$
 
 Las distribuciones aprioris para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
@@ -552,9 +532,6 @@ $$
 \beta_k \sim N(\mu, \tau^2)\\
 \sigma^2_v \sim Inversa-Gamma(\alpha_1,\alpha_2)
 $$
-
-
-
 
 Creando código de `STAN`
 
@@ -619,14 +596,11 @@ generated quantities {
 
 ```
 
-
-
 Preparando el código de `STAN`
 
 ```{r, eval=TRUE}
 fit_FH_beta <- cmdstan_model("Data/modelosStan/FH_beta.stan")
 ```
-
 
 ```{r}
 sample_data <- list(N1 = nrow(data_dir),
@@ -638,7 +612,6 @@ sample_data <- list(N1 = nrow(data_dir),
                    phi = data_dir$n_effec - 1
                     )
 ```
-  
 
 Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
 
@@ -657,6 +630,7 @@ model_FH_beta <-
 ```
 
 Comparando resultados.
+
 ```{r, eval=TRUE}
 N1 <- nrow(data_dir)
 y_pred_B <- model_FH_beta$draws(variables = "theta", format = "matrix")
@@ -665,7 +639,6 @@ y_pred2 <- y_pred_B[rowsrandom, 1:N1]
 ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) +
   xlim(-0.2,1.2)
 ```
-
 
 ```{r, eval=TRUE}
 theta_FH <- model_FH_beta$summary(variables =  "theta")
@@ -681,6 +654,7 @@ ggplot(data = data_dir, aes(x = pred_beta, y = thetahat)) +
 ```
 
 Comparando las predicciones de los modelos arcsin y beta
+
 ```{r, eval=TRUE}
 theta_FH_pred <-
   model_FH_beta$summary(variables =  "thetapred")
@@ -690,7 +664,6 @@ ggplot(data = data_syn, aes(x = pred_beta)) +
   xlim(-0.2, 1.2) +
   theme_bw(base_size = 20)
 ```
-
 
 ```{r, eval=TRUE}
 ggplot(data = data_syn, aes(x = pred_beta, y = pred_arcsin)) + 
@@ -703,8 +676,7 @@ ggplot(data = data_syn, aes(x = pred_beta, y = pred_arcsin)) +
   geom_point() + theme_bw(base_size = 20)
 ```
 
-
-Estimación de los parámetros 
+Estimación de los parámetros
 
 ```{r, eval=TRUE}
 model_FH_beta$summary(
@@ -715,5 +687,36 @@ model_FH_beta$summary(
 (mcmc_dens_chains(model_FH_beta$draws("sigma2_v")) +
     mcmc_areas(model_FH_beta$draws("sigma2_v")))/ 
   mcmc_trace(model_FH_beta$draws("sigma2_v"))
+```
+
+
+### Creando el mapa con los resultados. 
+
+```{r}
+library(sp)
+library(sf)
+library(tmap)
+
+data_map <- rbind(
+  data_dir %>% select(canton,pred_beta), 
+  data_syn %>% select(canton,pred_beta))
+
+## Leer Shape del pais
+ShapeSAE <- read_sf("ShapeECU/ecuador_Cantones.shp")
+ShapeSAE %<>% mutate(canton = DPA_CANTON)
+
+mapa <- tm_shape(ShapeSAE %>%
+                           left_join(data_map,  by = "canton"))
+
+brks_lp <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1)
+tmap_options(check.and.fix = TRUE)
+Mapa_lp <-
+  mapa + tm_polygons(
+    "pred_beta",
+    breaks = brks_lp,
+    title = "Mapa de pobreza",
+    palette = "-YlOrRd"
+  ) + tm_layout(asp = 0)
+
 ```
 

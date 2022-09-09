@@ -1,7 +1,12 @@
 ---
 title: "Modelos lineales y mixtos en R y STAN"
-author: "CEPAL - División de Estadísticas Sociales"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
 format: html
+editor: visual
+project:
+  type: website
+  output-dir: docs
 ---
 
 ```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}

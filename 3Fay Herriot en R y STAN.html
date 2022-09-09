@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="CEPAL - División de Estadísticas Sociales">
+<meta name="author" content="Andrés Gutiérrez - Stalyn Guerrero">
 
 <title>Fay Herriot en R y STAN</title>
 <style>
@@ -111,6 +111,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Fay Herriot en R y STAN</h1>
+<p class="subtitle lead">CEPAL - División de Estadísticas Sociales</p>
 </div>
 
 
@@ -120,7 +121,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>CEPAL - División de Estadísticas Sociales </p>
+             <p>Andrés Gutiérrez - Stalyn Guerrero </p>
           </div>
   </div>
     
@@ -171,7 +172,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><span class="math display">\[
 \hat{\bar{Y}}_d = \frac{1}{\hat{N}_d} \sum_{s_d}w_{k}y_{k}
 \]</span></p>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-3_078efb7033373b743265ca85e398780e">
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-3_e9af42f858770cdf68ed8a6a5d4b78d7">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Estimacion_dir <span class="ot">&lt;-</span> diseno <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(canton) <span class="sc">%&gt;%</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">nd =</span> <span class="fu">unweighted</span>(<span class="fu">n</span>()),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">thetahat =</span> <span class="fu">survey_mean</span>(pobreza, <span class="at">vartype =</span> <span class="fu">c</span>(<span class="st">"se"</span>), <span class="at">deff =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
@@ -185,12 +186,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span>,</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      thetahat_deff</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">provincia =</span> <span class="fu">substr</span>(canton, <span class="dv">1</span>, <span class="dv">2</span>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(provincia, canton<span class="sc">:</span>urban.coverfraction) <span class="sc">%&gt;%</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(thetahat_se)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Estimacion_dir)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">provincia =</span> <span class="fu">substr</span>(canton, <span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(provincia, canton<span class="sc">:</span>urban.coverfraction) <span class="sc">%&gt;%</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(thetahat_se)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(Estimacion_dir)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
 <colgroup>
@@ -303,7 +305,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Dividiendo los datos en observados y NO observados.</p>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-5_ffe86987f3c9983b47a88d966572d039">
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-5_571eae7e8f11f5899dc3d4d5a342ea9f">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>data_dir <span class="ot">&lt;-</span> Estimacion_dir <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(thetahat) ,<span class="sc">!</span><span class="fu">is.na</span>(tasa_desocupacion),</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>         thetahat <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
@@ -324,9 +326,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -0.1957303</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(data_dir<span class="sc">$</span>thetahat, data_dir<span class="sc">$</span>urban.coverfraction)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(data_dir<span class="sc">$</span>thetahat, <span class="fu">log</span>(data_dir<span class="sc">$</span>urban.coverfraction))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.1327076</code></pre>
+<pre><code>[1] -0.2226019</code></pre>
 </div>
 </div>
 <section id="modelo-bayesiano" class="level3">
@@ -449,18 +451,18 @@ Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup)
 Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
-Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 1 finished in 89.9 seconds.
-Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 2 finished in 90.7 seconds.
 Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 4 finished in 90.7 seconds.
+Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 1 finished in 93.4 seconds.
+Chain 4 finished in 93.2 seconds.
+Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 2 finished in 93.5 seconds.
 Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 3 finished in 91.3 seconds.
+Chain 3 finished in 94.7 seconds.
 
 All 4 chains finished successfully.
-Mean chain execution time: 90.7 seconds.
-Total execution time: 91.8 seconds.</code></pre>
+Mean chain execution time: 93.7 seconds.
+Total execution time: 95.2 seconds.</code></pre>
 </div>
 </div>
 <p>Comparando resultados.</p>
@@ -551,17 +553,17 @@ Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling)
 Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 1 finished in 79.1 seconds.
+Chain 1 finished in 73.0 seconds.
 Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 3 finished in 82.6 seconds.
+Chain 3 finished in 77.5 seconds.
 Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 4 finished in 85.0 seconds.
+Chain 4 finished in 79.5 seconds.
 Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 2 finished in 87.9 seconds.
+Chain 2 finished in 82.0 seconds.
 
 All 4 chains finished successfully.
-Mean chain execution time: 83.7 seconds.
-Total execution time: 88.4 seconds.</code></pre>
+Mean chain execution time: 78.0 seconds.
+Total execution time: 82.2 seconds.</code></pre>
 </div>
 </div>
 <p>Comparando resultados.</p>
@@ -699,26 +701,26 @@ Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup)
 Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
 Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
 Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) 
-Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
-Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
-Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
-Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
-Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 2 finished in 112.0 seconds.
 Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 4 finished in 112.2 seconds.
+Chain 4 finished in 79.2 seconds.
 Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 3 finished in 113.9 seconds.
+Chain 3 finished in 80.1 seconds.
+Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 2 finished in 80.8 seconds.
 Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 1 finished in 122.5 seconds.
+Chain 1 finished in 89.8 seconds.
 
 All 4 chains finished successfully.
-Mean chain execution time: 115.2 seconds.
-Total execution time: 122.8 seconds.</code></pre>
+Mean chain execution time: 82.4 seconds.
+Total execution time: 90.0 seconds.</code></pre>
 </div>
 </div>
 <p>Comparando resultados.</p>
@@ -796,15 +798,15 @@ Total execution time: 122.8 seconds.</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">sigma2_v</td>
-<td style="text-align: right;">0.0401254</td>
-<td style="text-align: right;">0.0396575</td>
-<td style="text-align: right;">0.0060263</td>
-<td style="text-align: right;">0.0059843</td>
-<td style="text-align: right;">0.0314326</td>
-<td style="text-align: right;">0.0504616</td>
-<td style="text-align: right;">1.000449</td>
-<td style="text-align: right;">3133.37</td>
-<td style="text-align: right;">3232.08</td>
+<td style="text-align: right;">0.0404093</td>
+<td style="text-align: right;">0.0399547</td>
+<td style="text-align: right;">0.0061034</td>
+<td style="text-align: right;">0.0061561</td>
+<td style="text-align: right;">0.0313768</td>
+<td style="text-align: right;">0.0510811</td>
+<td style="text-align: right;">1.000992</td>
+<td style="text-align: right;">2857.673</td>
+<td style="text-align: right;">3038.853</td>
 </tr>
 </tbody>
 </table>
@@ -914,8 +916,8 @@ b = (1 - \theta) * \phi\\
 <span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>                    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Para ejecutar <code>STAN</code> en R tenemos la librería <em>cmdstanr</em></p>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-30_0b9237ce301356558fd7b09c2728c5d0">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>model_FH_betal <span class="ot">&lt;-</span></span>
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-30_7d6f7bd82cdfa96e9e8a4273b495fce3">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>model_FH_beta <span class="ot">&lt;-</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  fit_FH_beta<span class="sc">$</span><span class="fu">sample</span>(</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> sample_data,</span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">iter_warmup =</span> <span class="dv">1000</span>,</span>
@@ -932,32 +934,32 @@ Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup)
 Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
 Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
 Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) 
-Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
-Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
 Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
-Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
-Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
-Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 3 finished in 484.3 seconds.
-Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 1 finished in 496.1 seconds.
-Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 4 finished in 504.9 seconds.
+Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
 Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-Chain 2 finished in 511.3 seconds.
+Chain 2 finished in 252.4 seconds.
+Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 1 finished in 258.5 seconds.
+Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 4 finished in 261.3 seconds.
+Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 3 finished in 262.6 seconds.
 
 All 4 chains finished successfully.
-Mean chain execution time: 499.2 seconds.
-Total execution time: 511.8 seconds.</code></pre>
+Mean chain execution time: 258.7 seconds.
+Total execution time: 262.9 seconds.</code></pre>
 </div>
 </div>
 <p>Comparando resultados.</p>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-31_83b4ba9d514ae392f51219f35c008c59">
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-31_51636b04d64079d63c2f6908b7385055">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>N1 <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data_dir)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>y_pred_B <span class="ot">&lt;-</span> model_FH_betal<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">"theta"</span>, <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>y_pred_B <span class="ot">&lt;-</span> model_FH_beta<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">"theta"</span>, <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>rowsrandom <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(y_pred_B), <span class="dv">100</span>)</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>y_pred2 <span class="ot">&lt;-</span> y_pred_B[rowsrandom, <span class="dv">1</span><span class="sc">:</span>N1]</span>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ppc_dens_overlay</span>(<span class="at">y =</span> <span class="fu">as.numeric</span>(data_dir<span class="sc">$</span>thetahat), y_pred2) <span class="sc">+</span></span>
@@ -966,8 +968,8 @@ Total execution time: 511.8 seconds.</code></pre>
 <p><img src="3Fay-Herriot-en-R-y-STAN_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-32_9384435b96f53460a6a573507a89d73e">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>theta_FH <span class="ot">&lt;-</span> model_FH_betal<span class="sc">$</span><span class="fu">summary</span>(<span class="at">variables =</span>  <span class="st">"theta"</span>)</span>
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-32_a89a10372f981ec0d07d9082a527378e">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>theta_FH <span class="ot">&lt;-</span> model_FH_beta<span class="sc">$</span><span class="fu">summary</span>(<span class="at">variables =</span>  <span class="st">"theta"</span>)</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>data_dir <span class="sc">%&lt;&gt;%</span> <span class="fu">mutate</span>(<span class="at">pred_beta =</span> theta_FH<span class="sc">$</span>mean)</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> data_dir, <span class="fu">aes</span>(<span class="at">x =</span> pred_beta, <span class="at">y =</span> thetahat)) <span class="sc">+</span></span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(</span>
@@ -981,15 +983,15 @@ Total execution time: 511.8 seconds.</code></pre>
 <p><img src="3Fay-Herriot-en-R-y-STAN_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-33_118231f35c7be05b8a423a126998661d">
+<p>Comparando las predicciones de los modelos arcsin y beta</p>
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-33_e1682c64f7bc41bc003924243921f874">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>theta_FH_pred <span class="ot">&lt;-</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  model_FH_betal<span class="sc">$</span><span class="fu">summary</span>(<span class="at">variables =</span>  <span class="st">"thetapred"</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  model_FH_beta<span class="sc">$</span><span class="fu">summary</span>(<span class="at">variables =</span>  <span class="st">"thetapred"</span>)</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>data_syn <span class="sc">%&lt;&gt;%</span> <span class="fu">mutate</span>(<span class="at">pred_beta =</span> theta_FH_pred<span class="sc">$</span>mean)</span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> data_syn, <span class="fu">aes</span>(<span class="at">x =</span> pred_beta)) <span class="sc">+</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">data =</span> data_dir, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="3Fay-Herriot-en-R-y-STAN_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -1008,15 +1010,15 @@ Total execution time: 511.8 seconds.</code></pre>
 </div>
 </div>
 <p>Estimación de los parámetros</p>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-35_c584b08d181bcdd6f1e4fae1a08fae85">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>model_FH_betal<span class="sc">$</span><span class="fu">summary</span>(</span>
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-35_c5d74afd5dabfe77766ca6f41508c713">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>model_FH_beta<span class="sc">$</span><span class="fu">summary</span>(</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"sigma2_v"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped">
 <colgroup>
 <col style="width: 9%">
 <col style="width: 10%">
-<col style="width: 10%">
+<col style="width: 9%">
 <col style="width: 10%">
 <col style="width: 10%">
 <col style="width: 10%">
@@ -1042,24 +1044,24 @@ Total execution time: 511.8 seconds.</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">sigma2_v</td>
-<td style="text-align: right;">0.8879523</td>
-<td style="text-align: right;">0.8742935</td>
-<td style="text-align: right;">0.1414085</td>
-<td style="text-align: right;">0.1362502</td>
-<td style="text-align: right;">0.6848043</td>
-<td style="text-align: right;">1.141734</td>
-<td style="text-align: right;">1.002335</td>
-<td style="text-align: right;">2193.463</td>
-<td style="text-align: right;">2810.387</td>
+<td style="text-align: right;">0.8857871</td>
+<td style="text-align: right;">0.870786</td>
+<td style="text-align: right;">0.1428276</td>
+<td style="text-align: right;">0.1369159</td>
+<td style="text-align: right;">0.6771562</td>
+<td style="text-align: right;">1.131635</td>
+<td style="text-align: right;">1.001354</td>
+<td style="text-align: right;">2024.369</td>
+<td style="text-align: right;">2936.834</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-36_7ec5601fcf425d8457442a1424411670">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">mcmc_dens_chains</span>(model_FH_betal<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>)) <span class="sc">+</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mcmc_areas</span>(model_FH_betal<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>)))<span class="sc">/</span> </span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mcmc_trace</span>(model_FH_betal<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="3Fay-Herriot-en-R-y-STAN_cache/html/unnamed-chunk-36_3372429085943b0ca737b84b7dc24f1b">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>(<span class="fu">mcmc_dens_chains</span>(model_FH_beta<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>)) <span class="sc">+</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mcmc_areas</span>(model_FH_beta<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>)))<span class="sc">/</span> </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mcmc_trace</span>(model_FH_beta<span class="sc">$</span><span class="fu">draws</span>(<span class="st">"sigma2_v"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="3Fay-Herriot-en-R-y-STAN_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="672"></p>
 </div>
