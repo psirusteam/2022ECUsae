@@ -103,7 +103,7 @@ fit <- stan_lmer(
                   chains = 2,
                  iter = 200
                 )
-
+saveRDS(fit, file = "Data/fit_ingresos.rds")
 ```
 
 # Proceso de estimación y predicción
