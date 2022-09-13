@@ -140,9 +140,9 @@ En `STAN` es posible obtener el mismo tipo de inferencia creando cuatro cadenas 
 
 ```{r, eval=FALSE, results='markup'}
 ## Definir el modelo
-data {                         // entradas del modelo 
-  int<lower=0> n;              // número de observaciones  
-  int y[n];                    // vector de longitud n
+data {                         // Entradas del modelo 
+  int<lower=0> n;              // Número de observaciones  
+  int y[n];                    // Vector de longitud n
 }
 parameters {                   // definir parámetro
   real<lower=0, upper=1> theta;
