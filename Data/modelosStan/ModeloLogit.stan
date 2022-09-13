@@ -6,19 +6,18 @@ data {
 }
 parameters {
   vector[K] beta;       // coefficients for predictors
-  real<lower=0> sigma;  // error scale
 }
 transformed parameters {
-    vector[n] inv_eta;
-   inv_eta = inv_logit(x * beta);
+    vector[n] theta;
+   theta = inv_logit(x * beta);
 }
 
 model {
   to_vector(beta) ~ normal(0, 10000);
-  y ~ bernoulli(inv_eta);  // likelihood
+  y ~ bernoulli(theta);  // likelihood
 }
 generated quantities {
     real ypred[n];                    // vector de longitud n
-    ypred = bernoulli_rng(inv_eta);
+    ypred = bernoulli_rng(theta);
 }
 

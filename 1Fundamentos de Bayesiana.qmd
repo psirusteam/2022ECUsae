@@ -915,6 +915,7 @@ parameters {
 }
 transformed parameters {
   real delta;
+  delta = theta[1] + theta[2];
 }
 model {
   y ~ multinomial(theta);
@@ -939,7 +940,7 @@ Organizando datos para `STAN`
 ```{r}
 sample_data <- list(k = nrow(dataMult),
                     y = dataMult$n,
-                    alpha = c(1000, 1000,1000))
+                    alpha = c(0.5, 0.5, 0.5))
 ```
 
 Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
@@ -955,7 +956,7 @@ model_Multinom <- Multinom$sample(data = sample_data,
 La estimación del parámetro $\theta$ es:
 
 ```{r}
-model_Multinom$summary(variables = c("theta"))
+model_Multinom$summary(variables = c("delta", "theta"))
 ```
 
 ```{r}
@@ -978,3 +979,21 @@ mcmc_areas(model_Multinom$draws("theta[3]")))/
 mcmc_trace(model_Multinom$draws("theta[3]")) 
 
 ```
+
+
+```{r}
+(mcmc_dens_chains(model_Multinom$draws("delta")) +
+mcmc_areas(model_Multinom$draws("delta")))/ 
+mcmc_trace(model_Multinom$draws("delta")) 
+
+```
+
+
+```{r}
+n <- nrow(dataMult)
+y_pred_B <- model_Multinom$draws(variables = "ypred", format = "matrix")
+rowsrandom <- sample(nrow(y_pred_B), 100)
+y_pred2 <- y_pred_B[, 1:n]
+ppc_dens_overlay(y = as.numeric(dataMult$n), y_pred2)
+```
+

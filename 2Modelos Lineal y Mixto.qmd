@@ -1,7 +1,12 @@
 ---
 title: "Modelos lineales y mixtos en R y STAN"
-author: "CEPAL - División de Estadísticas Sociales"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
 format: html
+editor: visual
+project:
+  type: website
+  output-dir: docs
 ---
 
 ```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}
@@ -247,7 +252,7 @@ model_fitLm1 <- fitLm1$sample(data = sample_data,
 La estimación del parámetro $B$ es:
 
 ```{r}
-model_fitLm1$summary(variables = c("b0","b1","sigma"))
+model_fitLm1$summary(variables = c("b0","b1","sigma"),)
 ```
 
 ```{r}
@@ -268,9 +273,9 @@ mcmc_trace(model_fitLm1$draws("b1"))
 ```
 
 ```{r}
-(mcmc_dens_chains(model_fitLm1$draws("sigma")) +
-mcmc_areas(model_fitLm1$draws("sigma")))/ 
-mcmc_trace(model_fitLm1$draws("sigma")) 
+(mcmc_dens_chains(model_fitLm1$draws("sigma2")) +
+mcmc_areas(model_fitLm1$draws("sigma2")))/ 
+mcmc_trace(model_fitLm1$draws("sigma2")) 
 
 ```
 
@@ -561,8 +566,7 @@ data {
 }
 parameters {
   vector[K] beta;       // coefficients for predictors
-  real<lower=0> sigma;  // error scale
-}
+ }
 transformed parameters {
    vector[n] eta;
    eta = x * beta;
@@ -1162,6 +1166,11 @@ model {
   
 }
 
+generated quantities {
+    real ypred[N];                    // vector de longitud n
+    ypred =  normal_rng(mu , sigma);
+}
+
 
 ```
 
@@ -1243,7 +1252,7 @@ mcmc_trace(model_Multinivel1$draws("beta1"))
 
 ```{r}
 n <- nrow(dataMultinivel)
-y_pred_B <- model_Multinivel1$draws(variables = "mu", format = "matrix")
+y_pred_B <- model_Multinivel1$draws(variables = "ypred", format = "matrix")
 rowsrandom <- sample(nrow(y_pred_B), 100)
 y_pred2 <- y_pred_B[rowsrandom, ]
 ppc_dens_overlay(y = dataMultinivel$prom_Ingreso, 
@@ -1361,7 +1370,7 @@ mcmc_trace(model_Multinivel2$draws("u"))
 
 ```{r}
 n <- nrow(dataMultinivel)
-y_pred_B <- model_Multinivel2$draws(variables = "mu", format = "matrix")
+y_pred_B <- model_Multinivel2$draws(variables = "ypred", format = "matrix")
 rowsrandom <- sample(nrow(y_pred_B), 100)
 y_pred2 <- y_pred_B[rowsrandom, ]
 ppc_dens_overlay(y = dataMultinivel$prom_Ingreso, 

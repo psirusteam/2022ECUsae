@@ -1,0 +1,348 @@
+---
+title: "Estimación del empleo"
+subtitle: "CEPAL - División de Estadísticas Sociales"
+author: "Andrés Gutiérrez - Stalyn Guerrero"
+format: html
+editor: visual
+project:
+  type: website
+  output-dir: docs
+---
+
+```{r setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(printr)
+```
+
+### Cargando las librerias requeridas.
+
+```{r}
+rm(list =ls())
+library(tidyverse)
+library(stringr)
+library(scales)
+library(bayesplot)
+library(gridExtra)
+library(gridExtra)
+library(scales)
+library(kableExtra)
+library(formatR)
+library(patchwork)
+library(cmdstanr)
+```
+
+### Importando datos
+
+```{r}
+source("0Funciones/funciones_mrp.R")
+encuesta_mrp <- readRDS("Data/encuesta_multinomial.rds") %>% 
+  filter(edad != "1")
+censo_mrp <- readRDS("Data/censo_multinomial.rds") %>% 
+  filter(edad != "1") 
+tasa_desocupados <- readRDS("Data/tasa_desocupacion.rds")
+
+```
+
+### Modelo en stan  
+
+```{r, eval=FALSE}
+functions {
+  matrix pred_theta(matrix Xp, matrix Zp, int p, matrix beta, matrix u){
+  int D1 = rows(Xp);
+  real num1[D1, p];
+  real den1[D1];
+  matrix[D1,p] theta_p;
+  
+  for(d in 1:D1){
+    num1[d, 1] = 1;
+    num1[d, 2] = exp(Xp[d, ] * beta[1, ]' + Zp[d, ] * u[1, ]') ;
+    num1[d, 3] = exp(Xp[d, ] * beta[2, ]' + Zp[d, ] * u[2, ]') ;
+    
+    den1[d] = sum(num1[d, ]);
+  }
+  
+  for(d in 1:D1){
+    for(i in 2:p){
+    theta_p[d, i] = num1[d, i]/den1[d];
+    }
+    theta_p[d, 1] = 1/den1[d];
+   }
+
+  return theta_p  ;
+  }
+  
+}
+
+data {
+  int<lower=1> D;    // número de postestrto 
+  int<lower=1> D1;   // número de dominios por predesir 
+  int<lower=1> P;    // categorías
+  int<lower=1> K;  // cantidad de regresores
+  int<lower=1> Kz; // cantidad de regresores en Z
+  int y[D, P];       // matriz de datos
+  matrix[D, K] X; // matriz de covariables
+  matrix[D, Kz] Z; // matriz de covariables
+  matrix[D1, K] Xp; // matriz de covariables
+  matrix[D1, Kz] Zp; // matriz de covariables
+}
+  
+
+parameters {
+  matrix[P-1, K] beta;// matriz de parámetros 
+  vector<lower=0>[P-1] sigma_u;       // random effects standard deviations
+  // declare L_u to be the Choleski factor of a 2x2 correlation matrix
+  cholesky_factor_corr[P-1] L_u;
+  matrix[P-1, Kz] z_u;                  
+}
+
+transformed parameters {
+  simplex[P] theta[D];// vector de parámetros;
+  real num[D, P];
+  real den[D];
+  // this transform random effects so that they have the correlation
+  // matrix specified by the correlation matrix above
+  matrix[P-1, Kz] u; // random effect matrix
+  u = diag_pre_multiply(sigma_u, L_u) * z_u;
+  
+  for(d in 1:D){
+    num[d, 1] = 1;
+    num[d, 2] = exp(X[d, ] * beta[1, ]' + Z[d, ] * u[1, ]') ;
+    num[d, 3] = exp(X[d, ] * beta[2, ]' + Z[d, ] * u[2, ]') ;
+    
+    den[d] = sum(num[d, ]);
+
+  }
+  for(d in 1:D){
+    for(p in 2:P){
+    theta[d, p] = num[d, p]/den[d];
+    }
+    theta[d, 1] = 1/den[d];
+  }
+}
+
+model {
+  L_u ~ lkj_corr_cholesky(1); // LKJ prior for the correlation matrix
+  to_vector(z_u) ~ normal(0, 1);
+  sigma_u ~ cauchy(0, 50);
+  to_vector(beta) ~ normal(0, 100);
+ 
+  for(d in 1:D){
+    target += multinomial_lpmf(y[d, ] | theta[d, ]); 
+  }
+}
+
+  
+generated quantities {
+  // predict 
+  matrix[D1,P] theta_p;// vector de parámetros;
+  matrix[2, 2] Omega;
+  vector<lower=0>[2] sdcomprobar;
+  sdcomprobar[1] = sd(u[1, ]);
+  sdcomprobar[2] = sd(u[2, ]);
+
+  Omega = L_u * L_u'; // so that it return the correlation matrix
+// predicción 
+
+theta_p = pred_theta(Xp,Zp,P, beta, u) ; 
+
+}
+
+
+```
+
+### Leyendo el modelo 
+```{r}
+fit <-
+  cmdstan_model(
+    stan_file = "Data/modelosStan/Multinivel_multinomial.stan",
+    compile = TRUE)
+```
+
+
+    
+### Covariables provenientes del censo e imagenes satelitales
+
+```{r}
+statelevel_predictors_df <- tasa_desocupados
+head(statelevel_predictors_df)
+```
+
+### Niveles de agregación para colapsar encuesta
+
+```{r}
+byAgrega <-
+  grep(
+    pattern =  "^(n|pobreza|ingreso|lp|li|fep)",
+    x = names(encuesta_mrp),
+    invert = TRUE,
+    value = TRUE
+  )
+
+```
+
+### Creando base con la encuesta agregada
+
+```{r}
+encuesta_df_agg <-
+  encuesta_mrp %>%
+  group_by_at(all_of(byAgrega)) %>%
+  summarise(n = n(),
+            .groups = "drop") 
+
+encuesta_df_agg %<>%
+  spread(key = "empleo",
+         value = "n", sep = "_" ,fill = 0) %>% 
+  arrange((empleo_1))
+
+
+encuesta_df_agg <- inner_join(encuesta_df_agg, 
+                              statelevel_predictors_df, by = "depto")
+
+head(encuesta_df_agg)
+```
+
+
+## Creando la variable multinomial (censo)
+```{r}
+censo_df <- censo_mrp %>% filter(!anoest %in% c("99"))
+
+censo_df <- inner_join(censo_df, 
+                       statelevel_predictors_df, by = "depto") %>% 
+  ungroup()
+
+```
+
+### Parámetros del modelo
+
+```{r}
+X <- encuesta_df_agg %>% select(-matches("depto|empleo|tasa|^F|^X")) %>%
+  model.matrix( ~ -1+ ., data = .)  %>%
+  bind_cols(encuesta_df_agg %>% select(matches("tasa|^F|^X"))) 
+
+Y <- encuesta_df_agg %>% select(matches("empleo")) %>%
+  as.matrix(.)
+
+Z <- encuesta_df_agg %>% select(matches("depto")) %>%
+  model.matrix( ~ -1+ ., data = .)%>%
+  as.matrix(.)
+
+
+Xp <- censo_df %>% select(-matches("^n|depto|empleo|tasa|^F|^X")) %>%
+  model.matrix( ~-1+ ., data = .)  %>%
+  bind_cols(censo_df %>% select(matches("tasa|F|^X"))) 
+
+Zp <- censo_df %>% select(matches("depto")) %>%
+  model.matrix( ~ -1+ ., data = .)%>%
+  as.matrix(.)
+
+```
+
+
+## Validando X y Xp 
+```{r}
+setdiff(names(X) ,names(Xp))
+setdiff(names(Xp) ,names(X))
+
+```
+
+
+## Validando Z y Zp 
+```{r}
+if(length(setdiff(colnames(Z) ,colnames(Zp)))>0){
+  agregarZp  <- setdiff(colnames(Z) ,colnames(Zp))
+  temp <- matrix(0, nrow = nrow(Zp),
+                 ncol = length(agregarZp),
+                 dimnames = list(1:nrow(Zp), agregarZp))
+  
+  Zp <- cbind(Zp, temp)  
+}
+if(length(setdiff(colnames(Zp) ,colnames(Z)))>0){
+  agregarZ  <- setdiff(colnames(Zp) ,colnames(Z))
+  temp <- matrix(0,nrow = nrow(Z),
+                 ncol = length(agregarZ),
+                 dimnames = list(1:nrow(Z), agregarZ))
+  
+  Z <- cbind(Z, temp)
+  
+}
+
+xnames <-  intersect(names(Xp) ,names(X))
+Znames <-  intersect(colnames(Zp) ,colnames(Z))
+
+
+```
+
+### Creando la información para el modelo 
+
+```{r, eval=FALSE}
+sample_data <- list(D = nrow(encuesta_df_agg),
+                    P = ncol(Y),
+                    K = ncol(X[,xnames]),
+                    D1 = nrow(Xp),
+                    Kz = ncol(Z),
+                    Z = Z[,Znames],
+                    Zp = Zp[,Znames],
+                    y = Y,
+                    X = X[,xnames]%>% as.matrix(),
+                    Xp = Xp[,xnames] %>% as.matrix()
+)
+
+fit_mcmc <- fit$sample(
+  data = sample_data,
+  seed = 123,
+  chains = 4,
+  parallel_chains = 4
+)
+
+
+#--- Exporting Bayesian Multilevel Model Results ---#
+
+fit_mcmc$save_object(
+  file = "MrPDepartamental/ECU/2020/Data/fit_multinomial.rds")
+
+```
+
+# Proceso de estimación y predicción
+
+Por tiempo de compilación se realiza el cargue del modelo estimado.
+
+```{r}
+fit <- readRDS("Data/fit_multinomial.rds")
+fit
+```
+
+### Predicción en el censo
+
+```{r}
+# Loading data ------------------------------------------------------------
+source("0Funciones/Funciones_empleo.R", encoding = "UTF-8")
+poststrat_df <- readRDS("Data/poststrat_multinomial.RDS") %>% 
+  mutate(n = n*gk)
+
+# Puntos de corte para el mapa
+brks_TO <- c(0 ,20, 40, 60, 80,100)
+brks_TD <- c(0,5, 10, 15, 20, 100)
+brks_TP <- c(0 ,20, 40, 60, 80,100)
+
+bynames <-
+  grep(
+    pattern =  "^(theta|n|pobreza|ingreso|tasa_desocupacion|epred_mat|gk|depto|lp|X|F)",
+    x = names(poststrat_df),
+    invert = TRUE,
+    value = TRUE
+  )
+
+bynames <-   t(combn(bynames, 2)) 
+bynames <- rbind(c("depto","depto"),bynames)
+
+dat_df = map(1:nrow(bynames),
+             ~Indicadores_censo(poststrat_df, unique(c("depto", bynames[.x,]) )))
+
+dat_df
+```
+
+## Algunos mapas resultantes
+
+### Tasa de ocupación
+
+![](Data/images/Tasa de ocupados.png){width="30cm" height="25cm"}

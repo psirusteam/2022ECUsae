@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.165">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Andrés Gutiérrez - Stalyn Guerrero">
+
+<title>Estimación del empleo</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="5Modelo unidad multinomial_files/libs/clipboard/clipboard.min.js"></script>
+<script src="5Modelo unidad multinomial_files/libs/quarto-html/quarto.js"></script>
+<script src="5Modelo unidad multinomial_files/libs/quarto-html/popper.min.js"></script>
+<script src="5Modelo unidad multinomial_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="5Modelo unidad multinomial_files/libs/quarto-html/anchor.min.js"></script>
+<link href="5Modelo unidad multinomial_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="5Modelo unidad multinomial_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="5Modelo unidad multinomial_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="5Modelo unidad multinomial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="5Modelo unidad multinomial_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Estimación del empleo</h1>
+<p class="subtitle lead">CEPAL - División de Estadísticas Sociales</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Andrés Gutiérrez - Stalyn Guerrero </p>
+          </div>
+  </div>
+    
+    
+  </div>
+  
+
+</header>
+
+<section id="cargando-las-librerias-requeridas." class="level3">
+<h3 class="anchored" data-anchor-id="cargando-las-librerias-requeridas.">Cargando las librerias requeridas.</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span><span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bayesplot)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(formatR)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cmdstanr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="importando-datos" class="level3">
+<h3 class="anchored" data-anchor-id="importando-datos">Importando datos</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"0Funciones/funciones_mrp.R"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>encuesta_mrp <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/encuesta_multinomial.rds"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(edad <span class="sc">!=</span> <span class="st">"1"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>censo_mrp <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/censo_multinomial.rds"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(edad <span class="sc">!=</span> <span class="st">"1"</span>) </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>tasa_desocupados <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/tasa_desocupacion.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="modelo-en-stan" class="level3">
+<h3 class="anchored" data-anchor-id="modelo-en-stan">Modelo en stan</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>functions {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  matrix <span class="fu">pred_theta</span>(matrix Xp, matrix Zp, int p, matrix beta, matrix u){</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  int D1 <span class="ot">=</span> <span class="fu">rows</span>(Xp);</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  real num1[D1, p];</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  real den1[D1];</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  matrix[D1,p] theta_p;</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>D1){</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    num1[d, <span class="dv">1</span>] <span class="ot">=</span> <span class="dv">1</span>;</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    num1[d, <span class="dv">2</span>] <span class="ot">=</span> <span class="fu">exp</span>(Xp[d, ] <span class="sc">*</span> beta[<span class="dv">1</span>, ]<span class="st">' + Zp[d, ] * u[1, ]'</span>) ;</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    num1[d, <span class="dv">3</span>] <span class="ot">=</span> <span class="fu">exp</span>(Xp[d, ] <span class="sc">*</span> beta[<span class="dv">2</span>, ]<span class="st">' + Zp[d, ] * u[2, ]'</span>) ;</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    den1[d] <span class="ot">=</span> <span class="fu">sum</span>(num1[d, ]);</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>D1){</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>p){</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    theta_p[d, i] <span class="ot">=</span> num1[d, i]<span class="sc">/</span>den1[d];</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    theta_p[d, <span class="dv">1</span>] <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>den1[d];</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>   }</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  return theta_p  ;</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>data {</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  int<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">1</span><span class="sc">&gt;</span> D;    <span class="sc">/</span><span class="er">/</span> número de postestrto </span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  int<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">1</span><span class="sc">&gt;</span> D1;   <span class="sc">/</span><span class="er">/</span> número de dominios por predesir </span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  int<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">1</span><span class="sc">&gt;</span> P;    <span class="sc">/</span><span class="er">/</span> categorías</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  int<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">1</span><span class="sc">&gt;</span> K;  <span class="sc">/</span><span class="er">/</span> cantidad de regresores</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  int<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">1</span><span class="sc">&gt;</span> Kz; <span class="sc">/</span><span class="er">/</span> cantidad de regresores en Z</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  int y[D, P];       <span class="sc">/</span><span class="er">/</span> matriz de datos</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  matrix[D, K] X; <span class="sc">/</span><span class="er">/</span> matriz de covariables</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  matrix[D, Kz] Z; <span class="sc">/</span><span class="er">/</span> matriz de covariables</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  matrix[D1, K] Xp; <span class="sc">/</span><span class="er">/</span> matriz de covariables</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  matrix[D1, Kz] Zp; <span class="sc">/</span><span class="er">/</span> matriz de covariables</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>parameters {</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  matrix[P<span class="dv">-1</span>, K] beta;<span class="sc">/</span><span class="er">/</span> matriz de parámetros </span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  vector<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">0</span><span class="sc">&gt;</span>[P<span class="dv">-1</span>] sigma_u;       <span class="sc">/</span><span class="er">/</span> random effects standard deviations</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> declare L_u to be the Choleski factor of a 2x2 correlation matrix</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  cholesky_factor_corr[P<span class="dv">-1</span>] L_u;</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  matrix[P<span class="dv">-1</span>, Kz] z_u;                  </span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>transformed parameters {</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  simplex[P] theta[D];<span class="sc">/</span><span class="er">/</span> vector de parámetros;</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  real num[D, P];</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  real den[D];</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> this transform random effects so that they have the correlation</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> matrix specified by the correlation matrix above</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  matrix[P<span class="dv">-1</span>, Kz] u; <span class="sc">/</span><span class="er">/</span> random effect matrix</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  u <span class="ot">=</span> <span class="fu">diag_pre_multiply</span>(sigma_u, L_u) <span class="sc">*</span> z_u;</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>D){</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    num[d, <span class="dv">1</span>] <span class="ot">=</span> <span class="dv">1</span>;</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    num[d, <span class="dv">2</span>] <span class="ot">=</span> <span class="fu">exp</span>(X[d, ] <span class="sc">*</span> beta[<span class="dv">1</span>, ]<span class="st">' + Z[d, ] * u[1, ]'</span>) ;</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    num[d, <span class="dv">3</span>] <span class="ot">=</span> <span class="fu">exp</span>(X[d, ] <span class="sc">*</span> beta[<span class="dv">2</span>, ]<span class="st">' + Z[d, ] * u[2, ]'</span>) ;</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    den[d] <span class="ot">=</span> <span class="fu">sum</span>(num[d, ]);</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>D){</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(p <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>P){</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    theta[d, p] <span class="ot">=</span> num[d, p]<span class="sc">/</span>den[d];</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    theta[d, <span class="dv">1</span>] <span class="ot">=</span> <span class="dv">1</span><span class="sc">/</span>den[d];</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>model {</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>  L_u <span class="sc">~</span> <span class="fu">lkj_corr_cholesky</span>(<span class="dv">1</span>); <span class="sc">/</span><span class="er">/</span> LKJ prior <span class="cf">for</span> the correlation matrix</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">to_vector</span>(z_u) <span class="sc">~</span> <span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  sigma_u <span class="sc">~</span> <span class="fu">cauchy</span>(<span class="dv">0</span>, <span class="dv">50</span>);</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">to_vector</span>(beta) <span class="sc">~</span> <span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">100</span>);</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>D){</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>    target <span class="sc">+</span><span class="er">=</span> <span class="fu">multinomial_lpmf</span>(y[d, ] <span class="sc">|</span> theta[d, ]); </span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>generated quantities {</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> predict </span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>  matrix[D1,P] theta_p;<span class="sc">/</span><span class="er">/</span> vector de parámetros;</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  matrix[<span class="dv">2</span>, <span class="dv">2</span>] Omega;</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  vector<span class="sc">&lt;</span>lower<span class="ot">=</span><span class="dv">0</span><span class="sc">&gt;</span>[<span class="dv">2</span>] sdcomprobar;</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  sdcomprobar[<span class="dv">1</span>] <span class="ot">=</span> <span class="fu">sd</span>(u[<span class="dv">1</span>, ]);</span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>  sdcomprobar[<span class="dv">2</span>] <span class="ot">=</span> <span class="fu">sd</span>(u[<span class="dv">2</span>, ]);</span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  Omega <span class="ot">=</span> L_u <span class="sc">*</span> L_u<span class="st">'; // so that it return the correlation matrix</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a><span class="st">// predicción </span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a><span class="st">theta_p = pred_theta(Xp,Zp,P, beta, u) ; </span></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="leyendo-el-modelo" class="level3">
+<h3 class="anchored" data-anchor-id="leyendo-el-modelo">Leyendo el modelo</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cmdstan_model</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">stan_file =</span> <span class="st">"Data/modelosStan/Multinivel_multinomial.stan"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">compile =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="covariables-provenientes-del-censo-e-imagenes-satelitales" class="level3">
+<h3 class="anchored" data-anchor-id="covariables-provenientes-del-censo-e-imagenes-satelitales">Covariables provenientes del censo e imagenes satelitales</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>statelevel_predictors_df <span class="ot">&lt;-</span> tasa_desocupados</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(statelevel_predictors_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+# Groups:   depto [6]
+  depto tasa_desocupacion F182013_stable_lights X2016_crops.coverfract…¹ X2016…²
+  &lt;chr&gt;             &lt;dbl&gt;                 &lt;dbl&gt;                    &lt;dbl&gt;   &lt;dbl&gt;
+1 01               0.0302                  6.36                     11.0   1.37 
+2 02               0.0350                  2.59                     12.7   0.792
+3 03               0.0325                  6.81                     17.2   1.08 
+4 04               0.0342                  3.43                     15.6   0.643
+5 05               0.0278                  4.28                     16.7   1.09 
+6 06               0.0310                  4.06                     20.0   0.819
+# … with abbreviated variable names ¹​X2016_crops.coverfraction,
+#   ²​X2016_urban.coverfraction</code></pre>
+</div>
+</div>
+</section>
+<section id="niveles-de-agregación-para-colapsar-encuesta" class="level3">
+<h3 class="anchored" data-anchor-id="niveles-de-agregación-para-colapsar-encuesta">Niveles de agregación para colapsar encuesta</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(n|pobreza|ingreso|lp|li|fep)"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(encuesta_mrp),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="creando-base-con-la-encuesta-agregada" class="level3">
+<h3 class="anchored" data-anchor-id="creando-base-con-la-encuesta-agregada">Creando base con la encuesta agregada</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  encuesta_mrp <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by_at</span>(<span class="fu">all_of</span>(byAgrega)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="sc">%&lt;&gt;%</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(<span class="at">key =</span> <span class="st">"empleo"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">value =</span> <span class="st">"n"</span>, <span class="at">sep =</span> <span class="st">"_"</span> ,<span class="at">fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>((empleo_1))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(encuesta_df_agg, </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                              statelevel_predictors_df, <span class="at">by =</span> <span class="st">"depto"</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(encuesta_df_agg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+depto
+</th>
+<th style="text-align:left;">
+area
+</th>
+<th style="text-align:left;">
+sexo
+</th>
+<th style="text-align:left;">
+etnia
+</th>
+<th style="text-align:left;">
+anoest
+</th>
+<th style="text-align:left;">
+edad
+</th>
+<th style="text-align:right;">
+empleo_1
+</th>
+<th style="text-align:right;">
+empleo_2
+</th>
+<th style="text-align:right;">
+empleo_3
+</th>
+<th style="text-align:right;">
+tasa_desocupacion
+</th>
+<th style="text-align:right;">
+F182013_stable_lights
+</th>
+<th style="text-align:right;">
+X2016_crops.coverfraction
+</th>
+<th style="text-align:right;">
+X2016_urban.coverfraction
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.0302004
+</td>
+<td style="text-align:right;">
+6.355676
+</td>
+<td style="text-align:right;">
+10.99138
+</td>
+<td style="text-align:right;">
+1.370317
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
+<section id="creando-la-variable-multinomial-censo" class="level2">
+<h2 class="anchored" data-anchor-id="creando-la-variable-multinomial-censo">Creando la variable multinomial (censo)</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>censo_df <span class="ot">&lt;-</span> censo_mrp <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span>anoest <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"99"</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>censo_df <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(censo_df, </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                       statelevel_predictors_df, <span class="at">by =</span> <span class="st">"depto"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="parámetros-del-modelo" class="level3">
+<h3 class="anchored" data-anchor-id="parámetros-del-modelo">Parámetros del modelo</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> encuesta_df_agg <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">matches</span>(<span class="st">"depto|empleo|tasa|^F|^X"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model.matrix</span>( <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span><span class="sc">+</span> ., <span class="at">data =</span> .)  <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(encuesta_df_agg <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"tasa|^F|^X"</span>))) </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> encuesta_df_agg <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"empleo"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>(.)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>Z <span class="ot">&lt;-</span> encuesta_df_agg <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"depto"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model.matrix</span>( <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span><span class="sc">+</span> ., <span class="at">data =</span> .)<span class="sc">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>(.)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>Xp <span class="ot">&lt;-</span> censo_df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">matches</span>(<span class="st">"^n|depto|empleo|tasa|^F|^X"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model.matrix</span>( <span class="sc">~-</span><span class="dv">1</span><span class="sc">+</span> ., <span class="at">data =</span> .)  <span class="sc">%&gt;%</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(censo_df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"tasa|F|^X"</span>))) </span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>Zp <span class="ot">&lt;-</span> censo_df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"depto"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">model.matrix</span>( <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span><span class="sc">+</span> ., <span class="at">data =</span> .)<span class="sc">%&gt;%</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>(.)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="validando-x-y-xp" class="level2">
+<h2 class="anchored" data-anchor-id="validando-x-y-xp">Validando X y Xp</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">names</span>(X) ,<span class="fu">names</span>(Xp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>character(0)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">names</span>(Xp) ,<span class="fu">names</span>(X))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "discapacidad1"</code></pre>
+</div>
+</div>
+</section>
+<section id="validando-z-y-zp" class="level2">
+<h2 class="anchored" data-anchor-id="validando-z-y-zp">Validando Z y Zp</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(<span class="fu">setdiff</span>(<span class="fu">colnames</span>(Z) ,<span class="fu">colnames</span>(Zp)))<span class="sc">&gt;</span><span class="dv">0</span>){</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  agregarZp  <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">colnames</span>(Z) ,<span class="fu">colnames</span>(Zp))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="fu">nrow</span>(Zp),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">ncol =</span> <span class="fu">length</span>(agregarZp),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(Zp), agregarZp))</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  Zp <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Zp, temp)  </span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(<span class="fu">setdiff</span>(<span class="fu">colnames</span>(Zp) ,<span class="fu">colnames</span>(Z)))<span class="sc">&gt;</span><span class="dv">0</span>){</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  agregarZ  <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">colnames</span>(Zp) ,<span class="fu">colnames</span>(Z))</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>,<span class="at">nrow =</span> <span class="fu">nrow</span>(Z),</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">ncol =</span> <span class="fu">length</span>(agregarZ),</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(Z), agregarZ))</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  Z <span class="ot">&lt;-</span> <span class="fu">cbind</span>(Z, temp)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>xnames <span class="ot">&lt;-</span>  <span class="fu">intersect</span>(<span class="fu">names</span>(Xp) ,<span class="fu">names</span>(X))</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>Znames <span class="ot">&lt;-</span>  <span class="fu">intersect</span>(<span class="fu">colnames</span>(Zp) ,<span class="fu">colnames</span>(Z))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="creando-la-información-para-el-modelo" class="level3">
+<h3 class="anchored" data-anchor-id="creando-la-información-para-el-modelo">Creando la información para el modelo</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sample_data <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">D =</span> <span class="fu">nrow</span>(encuesta_df_agg),</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">P =</span> <span class="fu">ncol</span>(Y),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">K =</span> <span class="fu">ncol</span>(X[,xnames]),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">D1 =</span> <span class="fu">nrow</span>(Xp),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Kz =</span> <span class="fu">ncol</span>(Z),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Z =</span> Z[,Znames],</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Zp =</span> Zp[,Znames],</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> Y,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">X =</span> X[,xnames]<span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>(),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Xp =</span> Xp[,xnames] <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>fit_mcmc <span class="ot">&lt;-</span> fit<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> sample_data,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">123</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">parallel_chains =</span> <span class="dv">4</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co">#--- Exporting Bayesian Multilevel Model Results ---#</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>fit_mcmc<span class="sc">$</span><span class="fu">save_object</span>(</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">"MrPDepartamental/ECU/2020/Data/fit_multinomial.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="proceso-de-estimación-y-predicción" class="level1">
+<h1>Proceso de estimación y predicción</h1>
+<p>Por tiempo de compilación se realiza el cargue del modelo estimado.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/fit_multinomial.rds"</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  variable     mean   median   sd  mad       q5      q95 rhat ess_bulk ess_tail
+ lp__      -3326.87 -3326.47 8.05 8.03 -3340.68 -3314.01 1.01      987     1664
+ beta[1,1]    -4.82    -4.80 0.82 0.80    -6.18    -3.49 1.00     1352     1971
+ beta[2,1]    -2.14    -2.14 0.31 0.30    -2.65    -1.64 1.00     1560     2300
+ beta[1,2]    -4.22    -4.20 0.82 0.81    -5.60    -2.89 1.00     1323     1943
+ beta[2,2]    -1.60    -1.60 0.31 0.31    -2.10    -1.09 1.00     1594     2400
+ beta[1,3]     0.49     0.49 0.08 0.08     0.36     0.61 1.00     6575     3107
+ beta[2,3]     1.30     1.30 0.03 0.03     1.25     1.36 1.00     6298     3189
+ beta[1,4]    -0.89    -0.89 0.09 0.09    -1.04    -0.73 1.00     5438     3155
+ beta[2,4]    -1.87    -1.87 0.05 0.05    -1.95    -1.79 1.00     5770     3445
+ beta[1,5]    -1.22    -1.22 0.11 0.11    -1.40    -1.05 1.00     5396     3268
+
+ # showing 10 of 39103 rows (change via 'max_rows' argument or 'cmdstanr_max_rows' option)</code></pre>
+</div>
+</div>
+<section id="predicción-en-el-censo" class="level3">
+<h3 class="anchored" data-anchor-id="predicción-en-el-censo">Predicción en el censo</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading data ------------------------------------------------------------</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"0Funciones/Funciones_empleo.R"</span>, <span class="at">encoding =</span> <span class="st">"UTF-8"</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>poststrat_df <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/poststrat_multinomial.RDS"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n =</span> n<span class="sc">*</span>gk)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Puntos de corte para el mapa</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>brks_TO <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span> ,<span class="dv">20</span>, <span class="dv">40</span>, <span class="dv">60</span>, <span class="dv">80</span>,<span class="dv">100</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>brks_TD <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">100</span>)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>brks_TP <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span> ,<span class="dv">20</span>, <span class="dv">40</span>, <span class="dv">60</span>, <span class="dv">80</span>,<span class="dv">100</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>bynames <span class="ot">&lt;-</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(theta|n|pobreza|ingreso|tasa_desocupacion|epred_mat|gk|depto|lp|X|F)"</span>,</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(poststrat_df),</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>bynames <span class="ot">&lt;-</span>   <span class="fu">t</span>(<span class="fu">combn</span>(bynames, <span class="dv">2</span>)) </span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>bynames <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="st">"depto"</span>,<span class="st">"depto"</span>),bynames)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>dat_df <span class="ot">=</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(bynames),</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>             <span class="sc">~</span><span class="fu">Indicadores_censo</span>(poststrat_df, <span class="fu">unique</span>(<span class="fu">c</span>(<span class="st">"depto"</span>, bynames[.x,]) )))</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>dat_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+# A tibble: 24 × 4
+   depto    TD    TO    TP
+   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    5.04   55.4  58.3
+ 2 02    0.945  76.7  77.5
+ 3 03    3.62   61.1  63.4
+ 4 04    5.67   56.1  59.5
+ 5 05    2.65   78.4  80.5
+ 6 06    2.08   78.9  80.6
+ 7 07    8.86   55.4  60.8
+ 8 08    8.12   52.3  57.0
+ 9 09    3.15   60.6  62.6
+10 10    6.77   56.3  60.4
+# … with 14 more rows
+
+[[2]]
+# A tibble: 96 × 6
+   depto area  sexo     TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    0     1     2.34   72.9  74.6
+ 2 01    0     2     3.59   47.1  48.9
+ 3 01    1     1     5.04   67.5  71.1
+ 4 01    1     2     7.92   42.2  45.9
+ 5 02    0     1     0.466  88.0  88.4
+ 6 02    0     2     0.719  69.9  70.4
+ 7 02    1     1     1.48   81.2  82.4
+ 8 02    1     2     2.38   59.3  60.8
+ 9 03    0     1     1.56   78.4  79.6
+10 03    0     2     2.46   54.8  56.2
+# … with 86 more rows
+
+[[3]]
+# A tibble: 192 × 6
+   depto area  edad      TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    0     2      6.17   49.4  52.7
+ 2 01    0     3      2.65   83.4  85.7
+ 3 01    0     4      1.58   75.9  77.2
+ 4 01    0     5      0.507  35.1  35.3
+ 5 01    1     2     12.0    38.6  43.9
+ 6 01    1     3      5.62   76.3  80.9
+ 7 01    1     4      3.87   68.0  70.7
+ 8 01    1     5      1.38   26.5  26.9
+ 9 02    0     2      1.10   76.2  77.0
+10 02    0     3      0.499  94.3  94.8
+# … with 182 more rows
+
+[[4]]
+# A tibble: 144 × 6
+   depto area  etnia    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    0     1     0.661  72.3  72.8
+ 2 01    0     2     4.16   66.2  69.0
+ 3 01    0     3     3.17   57.4  59.3
+ 4 01    1     1     1.66   68.1  69.2
+ 5 01    1     2     9.17   56.7  62.4
+ 6 01    1     3     6.45   52.9  56.5
+ 7 02    0     1     0.220  85.2  85.4
+ 8 02    0     2     1.28   81.5  82.6
+ 9 02    0     3     0.953  74.4  75.1
+10 02    1     1     0.447  81.2  81.6
+# … with 134 more rows
+
+[[5]]
+# A tibble: 192 × 6
+   depto area  anoest    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    0     1      0.844  43.0  43.3
+ 2 01    0     2      1.36   59.6  60.4
+ 3 01    0     3      3.89   62.2  64.7
+ 4 01    0     4      4.70   70.3  73.8
+ 5 01    1     1      2.01   32.1  32.8
+ 6 01    1     2      2.75   45.9  47.2
+ 7 01    1     3      6.46   48.3  51.7
+ 8 01    1     4      7.14   61.5  66.3
+ 9 02    0     1      0.130  73.8  73.9
+10 02    0     2      0.264  79.5  79.7
+# … with 182 more rows
+
+[[6]]
+# A tibble: 96 × 6
+   depto area  discapacidad    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    0     0            2.99   59.8  61.6
+ 2 01    0     1            1.57   50.7  51.5
+ 3 01    1     0            6.45   53.9  57.7
+ 4 01    1     1            4.09   43.6  45.4
+ 5 02    0     0            0.593  80.5  81.0
+ 6 02    0     1            0.314  72.9  73.1
+ 7 02    1     0            1.93   71.1  72.5
+ 8 02    1     1            1.05   60.9  61.5
+ 9 03    0     0            2.07   66.4  67.8
+10 03    0     1            1.01   59.8  60.5
+# … with 86 more rows
+
+[[7]]
+# A tibble: 192 × 6
+   depto sexo  edad      TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     2      7.89   58.8  63.9
+ 2 01    1     3      3.60   88.2  91.5
+ 3 01    1     4      2.45   83.8  85.9
+ 4 01    1     5      0.800  45.7  46.0
+ 5 01    2     2     12.5    30.1  34.4
+ 6 01    2     3      5.74   70.4  74.7
+ 7 01    2     4      3.69   59.7  62.0
+ 8 01    2     5      1.14   18.0  18.2
+ 9 02    1     2      1.45   82.9  84.1
+10 02    1     3      0.669  96.3  96.9
+# … with 182 more rows
+
+[[8]]
+# A tibble: 144 × 6
+   depto sexo  etnia     TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     1      0.844  82.7  83.4
+ 2 01    1     2      6.15   73.1  77.9
+ 3 01    1     3      4.21   68.6  71.6
+ 4 01    2     1      1.14   59.0  59.7
+ 5 01    2     2     10.3    46.8  52.2
+ 6 01    2     3      6.60   43.2  46.2
+ 7 02    1     1      0.196  92.0  92.2
+ 8 02    1     2      1.62   86.3  87.7
+ 9 02    1     3      1.12   82.3  83.2
+10 02    2     1      0.294  76.5  76.8
+# … with 134 more rows
+
+[[9]]
+# A tibble: 192 × 6
+   depto sexo  anoest    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     1      0.919  56.9  57.5
+ 2 01    1     2      1.42   66.8  67.8
+ 3 01    1     3      4.28   67.2  70.2
+ 4 01    1     4      5.27   76.3  80.6
+ 5 01    2     1      1.33   31.3  31.7
+ 6 01    2     2      2.35   44.3  45.4
+ 7 01    2     3      6.88   41.2  44.2
+ 8 01    2     4      8.66   51.2  56.1
+ 9 02    1     1      0.129  82.2  82.3
+10 02    1     2      0.260  84.7  85.0
+# … with 182 more rows
+
+[[10]]
+# A tibble: 96 × 6
+   depto sexo  discapacidad    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     0            4.13   70.2  73.2
+ 2 01    1     1            2.27   61.2  62.6
+ 3 01    2     0            6.47   44.7  47.8
+ 4 01    2     1            3.73   34.1  35.4
+ 5 02    1     0            0.788  86.6  87.3
+ 6 02    1     1            0.417  80.4  80.7
+ 7 02    2     0            1.27   67.4  68.3
+ 8 02    2     1            0.636  55.9  56.2
+ 9 03    1     0            2.99   75.2  77.5
+10 03    1     1            1.60   68.3  69.4
+# … with 86 more rows
+
+[[11]]
+# A tibble: 288 × 6
+   depto edad  etnia     TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    2     1      1.93   63.2  64.4
+ 2 01    2     2     14.7    44.8  52.6
+ 3 01    2     3     10.5    40.8  45.6
+ 4 01    3     1      0.720  90.4  91.1
+ 5 01    3     2      6.58   80.6  86.2
+ 6 01    3     3      4.85   77.9  81.9
+ 7 01    4     1      0.390  85.0  85.4
+ 8 01    4     2      4.08   75.3  78.5
+ 9 01    4     3      3.16   70.1  72.3
+10 01    5     1      0.119  48.1  48.2
+# … with 278 more rows
+
+[[12]]
+# A tibble: 384 × 6
+   depto edad  anoest    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    2     1       3.64  37.8  39.3
+ 2 01    2     2       4.67  44.7  46.9
+ 3 01    2     3       9.10  40.0  44.1
+ 4 01    2     4      11.8   44.7  50.7
+ 5 01    3     1       1.62  75.6  76.9
+ 6 01    3     2       2.25  79.7  81.5
+ 7 01    3     3       4.46  76.6  80.2
+ 8 01    3     4       5.59  80.2  85.0
+ 9 01    4     1       1.16  64.8  65.6
+10 01    4     2       1.64  71.1  72.3
+# … with 374 more rows
+
+[[13]]
+# A tibble: 192 × 6
+   depto edad  discapacidad    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    2     0            9.89   42.2  46.9
+ 2 01    2     1            7.96   42.7  46.4
+ 3 01    3     0            4.68   78.5  82.4
+ 4 01    3     1            3.83   79.2  82.3
+ 5 01    4     0            3.05   70.8  73.0
+ 6 01    4     1            2.57   70.6  72.4
+ 7 01    5     0            0.938  30.6  30.9
+ 8 01    5     1            0.799  30.2  30.4
+ 9 02    2     0            1.79   71.2  72.5
+10 02    2     1            1.46   70.2  71.3
+# … with 182 more rows
+
+[[14]]
+# A tibble: 288 × 6
+   depto etnia anoest     TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     1       0.291  60.7  60.8
+ 2 01    1     2       0.485  76.2  76.5
+ 3 01    1     3       1.43   71.9  72.9
+ 4 01    1     4       1.72   79.6  81.0
+ 5 01    2     1       2.69   44.9  46.1
+ 6 01    2     2       3.72   60.4  62.8
+ 7 01    2     3       9.11   58.1  63.9
+ 8 01    2     4      11.1    64.8  72.9
+ 9 01    3     1       1.35   35.9  36.4
+10 01    3     2       1.99   52.0  53.0
+# … with 278 more rows
+
+[[15]]
+# A tibble: 144 × 6
+   depto etnia discapacidad    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1     0            1.01   71.6  72.4
+ 2 01    1     1            0.457  64.0  64.3
+ 3 01    2     0            8.28   59.0  64.3
+ 4 01    2     1            4.39   54.8  57.4
+ 5 01    3     0            5.42   55.1  58.3
+ 6 01    3     1            3.03   45.6  47.1
+ 7 02    1     0            0.247  85.3  85.5
+ 8 02    1     1            0.118  80.4  80.5
+ 9 02    2     0            2.20   78.1  79.9
+10 02    2     1            1.05   74.9  75.7
+# … with 134 more rows
+
+[[16]]
+# A tibble: 192 × 6
+   depto anoest discapacidad    TD    TO    TP
+   &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 01    1      0            1.13   40.6  41.1
+ 2 01    1      1            1.17   35.9  36.3
+ 3 01    2      0            1.92   54.8  55.9
+ 4 01    2      1            1.42   47.0  47.6
+ 5 01    3      0            5.41   53.8  56.9
+ 6 01    3      1            3.87   50.4  52.5
+ 7 01    4      0            6.86   62.6  67.2
+ 8 01    4      1            5.50   62.6  66.3
+ 9 02    1      0            0.159  72.9  73.0
+10 02    1      1            0.177  66.2  66.3
+# … with 182 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="algunos-mapas-resultantes" class="level2">
+<h2 class="anchored" data-anchor-id="algunos-mapas-resultantes">Algunos mapas resultantes</h2>
+<section id="tasa-de-ocupación" class="level3">
+<h3 class="anchored" data-anchor-id="tasa-de-ocupación">Tasa de ocupación</h3>
+<p><img src="Data/images/Tasa%20de%20ocupados.png" style="width:30cm;height:25cm"></p>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

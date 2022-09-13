@@ -6,12 +6,17 @@ data {
 parameters {
   real b0;            // Intercepto
   real b1;            // Pendiente
-  real<lower=0> sigma;  // error scale
+  real<lower=0> sigma2;  // error scale
 }
+transformed parameters{
+  real<lower=0> sigma;
+  sigma = sqrt(sigma2);
+}
+
 model {
-  b0 ~ normal(250, 100);
-  b1 ~ normal(-1000, 100);
-  sigma ~ cauchy(60, 15); 
+  b0 ~ normal(0, 1000);
+  b1 ~ normal(0, 1000);
+  sigma2 ~ inv_gamma(0.0001, 0.0001);
   y ~ normal(b0 + b1*x, sigma);  // likelihood
 }
 generated quantities {
