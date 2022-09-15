@@ -1,5 +1,5 @@
 data {
-  int<lower=1> D;    // número de postestrto 
+  int<lower=1> D;    // número de dominios 
   int<lower=1> P;    // categorías
   int<lower=1> K;  // cantidad de regresores
   int y[D, P];       // matriz de datos

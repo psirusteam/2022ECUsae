@@ -14,7 +14,47 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(printr)
 ```
 
-### Cargando las librerias requeridas.
+En interés se centra en la estimación de la tasa de ocupados, desocupados y participación. La variable respuesta es la condición de actividad económica,  que puede tomar los valores de *-1* cuando el individuo es un niño, *1* si es ocupado, *2* cuando es desocupado, *3* si la persona esta inactiva y *9* cuando la persona No sabe o no responde. Para simplificar el ejercicio se consideran solo tres estados ocupados, desocupados e inactivos.  
+
+## Modelo bayesiano. 
+
+La variable de interés se puede modelar con la distribución Multinomial, con tres categorías. 
+
+$$
+Y_{d} \sim  Multinon\left( \boldsymbol{\theta} \right)
+$$
+con $\sum_{k=1}^{3} \theta_i = 1$ y 
+$$
+\begin{eqnarray*}
+\theta_1 &=&  \frac{1}{1+ \exp\left( \mu_1 \right) + \exp\left( \mu_2 \right)}\\\\
+\theta_2 &=&  \frac{\exp\left( \mu_1 \right)}{1+ \exp\left( \mu_1 \right) + \exp\left( \mu_2 \right)}\\\\
+\theta_3 &=&  \frac{\exp\left( \mu_2 \right)}{1+ \exp\left( \mu_1 \right) + \exp\left( \mu_2 \right)}\\
+\end{eqnarray*}
+$$
+donde  
+$$
+\begin{eqnarray*}
+\mu_{1}&=&\boldsymbol{X}_d^{T}\boldsymbol{\beta_1}+u_{d}\\
+\mu_{2}&=&\boldsymbol{X}_d^{T}\boldsymbol{\beta_2}+u_{d}
+\end{eqnarray*}
+$$
+
+para $u_{d}\sim N\left(0,\sigma_{u}\right)$.
+
+Las distribuciones previas se consideran no informativas
+
+$$
+\begin{eqnarray*}
+\beta_k & \sim   & N(\mu_0, \tau^2_0)\\
+\sigma^2_u &\sim & Inversa-Gamma(\alpha_1,\alpha_2)
+\end{eqnarray*}
+$$
+
+A continuación se muestra el proceso realizado para la obtención de la predicción de la tasa de desocupación. 
+
+### Cargando las librerías requeridas.
+
+Las librerías utilizada para desarrollar la metodología son las siguientes.
 
 ```{r}
 rm(list =ls())
@@ -29,21 +69,49 @@ library(kableExtra)
 library(formatR)
 library(patchwork)
 library(cmdstanr)
+source("0Funciones/funciones_mrp.R")
 ```
+
+Un conjunto de funciones desarrolladas para realizar de forma eficiente los procesos están consignadas en la siguiente rutina.
+
+```{r}
+library(printr)
+source("0Funciones/Funciones_empleo.R")
+```
+
+Entre las funciones incluidas en el archivo encuentra
+
+-   *Indicadores_encuesta*: Realiza la estimación de las tasa de interés, de igual forma se tiene la función de *Indicadores_censo* para el calculo de los indicadores en el censo.   
+
 
 ### Importando datos
 
+Los datos empleados en esta ocasión corresponden a la ultima encuesta de hogares, la cual ha sido estandarizada por *CEPAL* y se encuentra disponible en *BADEHOG*. Se filtran las personas con una edad mayor a los 15 años en el censo y la encuesta. 
+
+
 ```{r}
-source("0Funciones/funciones_mrp.R")
 encuesta_mrp <- readRDS("Data/encuesta_multinomial.rds") %>% 
   filter(edad != "1")
 censo_mrp <- readRDS("Data/censo_multinomial.rds") %>% 
-  filter(edad != "1") 
-tasa_desocupados <- readRDS("Data/tasa_desocupacion.rds")
-
+  filter(edad != "1")
 ```
 
-### Modelo en stan  
+La información auxiliar disponible ha sido extraída del censo (tasa de desocupación) e imágenes satelitales (luces nocturnas, uso del suelo urbano y uso del suelo cultivos) 
+
+```{r}
+tasa_desocupados <- readRDS("Data/tasa_desocupacion.rds")
+statelevel_predictors_df <- tasa_desocupados
+head(statelevel_predictors_df)
+```
+
+-   *depto*: Corresponde al código asignado a la segunda división administrativa del país. 
+-   *tasa_desocupacion*: Información extraida del último censo del país. 
+-   *F182013_stable_lights*, *X2016_crops.coverfraction* y *X2016_urban.coverfraction* información satelital extraída de google earth engine. 
+
+
+
+### Modelo en stan
+El modelo escrito en `STAN` queda con la siguiente estructura. 
 
 ```{r, eval=FALSE}
 functions {
@@ -75,14 +143,14 @@ functions {
 
 data {
   int<lower=1> D;    // número de postestrto 
-  int<lower=1> D1;   // número de dominios por predesir 
+  int<lower=1> D1;   // número de dominios por predecir 
   int<lower=1> P;    // categorías
-  int<lower=1> K;  // cantidad de regresores
-  int<lower=1> Kz; // cantidad de regresores en Z
+  int<lower=1> K;    // cantidad de regresores
+  int<lower=1> Kz;   // cantidad de regresores en Z
   int y[D, P];       // matriz de datos
-  matrix[D, K] X; // matriz de covariables
-  matrix[D, Kz] Z; // matriz de covariables
-  matrix[D1, K] Xp; // matriz de covariables
+  matrix[D, K] X;    // matriz de covariables
+  matrix[D, Kz] Z;   // matriz de covariables
+  matrix[D1, K] Xp;  // matriz de covariables
   matrix[D1, Kz] Zp; // matriz de covariables
 }
   
@@ -150,7 +218,9 @@ theta_p = pred_theta(Xp,Zp,P, beta, u) ;
 
 ```
 
-### Leyendo el modelo 
+### Leyendo el modelo
+Para ejecutar el modelo  procedemos así:
+
 ```{r}
 fit <-
   cmdstan_model(
@@ -159,15 +229,10 @@ fit <-
 ```
 
 
-    
-### Covariables provenientes del censo e imagenes satelitales
-
-```{r}
-statelevel_predictors_df <- tasa_desocupados
-head(statelevel_predictors_df)
-```
 
 ### Niveles de agregación para colapsar encuesta
+
+La estimación del modelo multinomial se realiza mediante el conteo del número de éxitos en cada categoría, es decir, dadas las variables $X$ cuantas personas de la encuestas están cada uno de los estados. Para lograr hacer el conteo identificamos las variables de agregación. 
 
 ```{r}
 byAgrega <-
@@ -182,27 +247,37 @@ byAgrega <-
 
 ### Creando base con la encuesta agregada
 
+El resultado de agregar la base de dato se muestra a continuación:
+
 ```{r}
 encuesta_df_agg <-
   encuesta_mrp %>%
   group_by_at(all_of(byAgrega)) %>%
   summarise(n = n(),
-            .groups = "drop") 
+            .groups = "drop")
+```
 
+Después de agregar la base se ordenan las categorías en las columnas así como se muestra a continuación.  
+
+```{r}
 encuesta_df_agg %<>%
   spread(key = "empleo",
          value = "n", sep = "_" ,fill = 0) %>% 
   arrange((empleo_1))
-
-
-encuesta_df_agg <- inner_join(encuesta_df_agg, 
-                              statelevel_predictors_df, by = "depto")
-
 head(encuesta_df_agg)
 ```
 
+por último incorporamos la información proveniente de otras fuentes. 
+
+```{r}
+encuesta_df_agg <- inner_join(encuesta_df_agg, 
+                              statelevel_predictors_df, by = "depto")
+
+
+```
 
 ## Creando la variable multinomial (censo)
+El proceso descrito para la encuesta lo repetimos para el censo. 
 ```{r}
 censo_df <- censo_mrp %>% filter(!anoest %in% c("99"))
 
@@ -213,6 +288,7 @@ censo_df <- inner_join(censo_df,
 ```
 
 ### Parámetros del modelo
+Los parámetros en están deben ser incluidos en una lista, para ello definimos cada argumento de forma separada, $Y$ es una matriz de con los conteos para cada categoría. 
 
 ```{r}
 X <- encuesta_df_agg %>% select(-matches("depto|empleo|tasa|^F|^X")) %>%
@@ -225,8 +301,11 @@ Y <- encuesta_df_agg %>% select(matches("empleo")) %>%
 Z <- encuesta_df_agg %>% select(matches("depto")) %>%
   model.matrix( ~ -1+ ., data = .)%>%
   as.matrix(.)
+```
 
+Definiendo las variables con las cuales se predice en el censo.
 
+```{r}
 Xp <- censo_df %>% select(-matches("^n|depto|empleo|tasa|^F|^X")) %>%
   model.matrix( ~-1+ ., data = .)  %>%
   bind_cols(censo_df %>% select(matches("tasa|F|^X"))) 
@@ -237,16 +316,17 @@ Zp <- censo_df %>% select(matches("depto")) %>%
 
 ```
 
+## Validando X y Xp
+Dado que el código escrito para `STAN` de las variables como lo hace `R`, es necesario realizar esas validaciones de forma externa al programa. En este caso identifican las columnas comunes entre $X$ y $Xp$; y $Z$ y $Zp$, en caso de identificar diferencias, están deben ser introducidas de forma manual a $Xp$ y $Zp$. 
 
-## Validando X y Xp 
 ```{r}
 setdiff(names(X) ,names(Xp))
 setdiff(names(Xp) ,names(X))
 
 ```
 
+## Validando Z y Zp
 
-## Validando Z y Zp 
 ```{r}
 if(length(setdiff(colnames(Z) ,colnames(Zp)))>0){
   agregarZp  <- setdiff(colnames(Z) ,colnames(Zp))
@@ -265,26 +345,32 @@ if(length(setdiff(colnames(Zp) ,colnames(Z)))>0){
   Z <- cbind(Z, temp)
   
 }
+```
 
+Una validación adicional es identificar los nombres de las columnas que son comunes 
+para seleccionarlas en el mismo orden. 
+
+```{r}
 xnames <-  intersect(names(Xp) ,names(X))
 Znames <-  intersect(colnames(Zp) ,colnames(Z))
 
 
 ```
 
-### Creando la información para el modelo 
+### Creando la información para el modelo
+
 
 ```{r, eval=FALSE}
-sample_data <- list(D = nrow(encuesta_df_agg),
-                    P = ncol(Y),
-                    K = ncol(X[,xnames]),
-                    D1 = nrow(Xp),
-                    Kz = ncol(Z),
-                    Z = Z[,Znames],
-                    Zp = Zp[,Znames],
-                    y = Y,
-                    X = X[,xnames]%>% as.matrix(),
-                    Xp = Xp[,xnames] %>% as.matrix()
+sample_data <- list(D = nrow(encuesta_df_agg), # Número de dominios. 
+                    P = ncol(Y),               # Número de estados.
+                    K = ncol(X[,xnames]),      # Número de efecto fijo.
+                    D1 = nrow(Xp),             # Número de a predecir. 
+                    Kz = ncol(Z),              # Número de efectos aleatorios.
+                    Z = Z[,Znames],            # Matriz de efectos aleatorios.
+                    Zp = Zp[,Znames],          # Matriz de efectos aleatorios.
+                    y = Y,                     # Conteos por categorías. 
+                    X = X[,xnames]%>% as.matrix(), # Matriz de efecto fijo 
+                    Xp = Xp[,xnames] %>% as.matrix() # Matriz de efecto fijo
 )
 
 fit_mcmc <- fit$sample(
@@ -312,18 +398,17 @@ fit
 ```
 
 ### Predicción en el censo
+Después de realizar validaciones sobre las predicciones obtenidas con el modelo, 
+organizar la salida se obtiene la siguientes data con las predicciones. 
 
 ```{r}
-# Loading data ------------------------------------------------------------
-source("0Funciones/Funciones_empleo.R", encoding = "UTF-8")
 poststrat_df <- readRDS("Data/poststrat_multinomial.RDS") %>% 
   mutate(n = n*gk)
+```
 
-# Puntos de corte para el mapa
-brks_TO <- c(0 ,20, 40, 60, 80,100)
-brks_TD <- c(0,5, 10, 15, 20, 100)
-brks_TP <- c(0 ,20, 40, 60, 80,100)
+Establecer las áreas pequeñas en las cuales se desea tener una predicción. 
 
+```{r}
 bynames <-
   grep(
     pattern =  "^(theta|n|pobreza|ingreso|tasa_desocupacion|epred_mat|gk|depto|lp|X|F)",
@@ -334,7 +419,11 @@ bynames <-
 
 bynames <-   t(combn(bynames, 2)) 
 bynames <- rbind(c("depto","depto"),bynames)
+```
 
+Realizar la predicción 
+
+```{r}
 dat_df = map(1:nrow(bynames),
              ~Indicadores_censo(poststrat_df, unique(c("depto", bynames[.x,]) )))
 
@@ -343,6 +432,6 @@ dat_df
 
 ## Algunos mapas resultantes
 
-### Tasa de ocupación
+### Tasa de desocupación
 
-![](Data/images/Tasa de ocupados.png){width="30cm" height="25cm"}
+![](Data/images/Tasa%20de%20ocupados.png){width="30cm" height="25cm"}

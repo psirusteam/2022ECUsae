@@ -98,6 +98,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <link href="4Modelo unidad ingresos_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="4Modelo unidad ingresos_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -130,8 +131,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="cargando-las-librerias-requeridas." class="level3">
-<h3 class="anchored" data-anchor-id="cargando-las-librerias-requeridas.">Cargando las librerias requeridas.</h3>
+<p>Uno de los primeros problemas a los que debemos enfrentarnos es la estimación del ingreso medio, la cual en una variable no simétrica que toma valores en los positivos.</p>
+<section id="modelo-bayesiano." class="level2">
+<h2 class="anchored" data-anchor-id="modelo-bayesiano.">Modelo bayesiano.</h2>
+<p>Para la predicción de esta variable es posible implementar el siguiente modelo.</p>
+<p>$$ <span class="math display">\[\begin{eqnarray*}
+Y_{di} &amp;\sim &amp; N\left(\mu_{di},\sigma_y^{2}\right)\\
+
+\mu_{di}&amp;=&amp;\boldsymbol{X}_{di}^{T}\boldsymbol{\beta}+u_{d}+e_{di}
+\end{eqnarray*}\]</span> $$</p>
+<p>Donde <span class="math inline">\(Y_{di}\)</span> representa el ingreso percapital de la <span class="math inline">\(i-ésima\)</span> persona en el <span class="math inline">\(d-ésimo\)</span> domino, <span class="math inline">\(\boldsymbol{X}\)</span> es la información disponible para la <span class="math inline">\(i-ésima\)</span> persona del <span class="math inline">\(d-ésimo\)</span> domino, <span class="math inline">\(\boldsymbol{\beta}\)</span> es el vector de parámetros <span class="math inline">\(u_d\)</span> es el efecto introducido por el <span class="math inline">\(d-ésimo\)</span> dominio y <span class="math inline">\(e_{di}\)</span> es el error de estimación para la <span class="math inline">\(i-ésima\)</span> personas del <span class="math inline">\(d-ésimo\)</span> dominio.</p>
+<p>Note, que <span class="math inline">\(u_{d}\sim N\left(0,\sigma_{u}\right)\)</span> y <span class="math inline">\(e_{di}\sim N\left(0,\sigma_{e}^{2}\right)\)</span>.</p>
+<p>Para este caso se asumen las distribuciones previas</p>
+<p><span class="math display">\[
+\begin{eqnarray*}
+\beta_k &amp; \sim   &amp; N(\mu_0, \tau^2_0)\\
+\sigma^2_y &amp;\sim &amp; Inversa-Gamma(\alpha_1,\alpha_2)
+\end{eqnarray*}
+\]</span> las cuales se toman no informativas.</p>
+<p>A continuación se muestra el proceso realizado para la obtención de la predicción del ingreso medio en dominios no observados.</p>
+<section id="cargando-las-librerías-requeridas." class="level3">
+<h3 class="anchored" data-anchor-id="cargando-las-librerías-requeridas.">Cargando las librerías requeridas.</h3>
+<p>Las librerías utilizada para desarrollar la metodología son las siguientes.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span><span class="fu">ls</span>())</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
@@ -147,19 +168,56 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(formatR)</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Un conjunto de funciones desarrolladas para realizar de forma eficiente los procesos están consignadas en la siguiente rutina.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(printr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"0Funciones/funciones_mrp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Entre las funciones incluidas en el archivo encuentra</p>
+<ul>
+<li><p><em>plot_interaction</em>: Esta crea un diagrama de lineas donde se estudia la interacción entre las variables, en el caso de presentar un traslape de las lineas se recomienda incluir el interacción en el modelo.</p></li>
+<li><p><em>Plot_Compare</em> Puesto que es necesario realizar una homologar la información del censo y la encuesta es conveniente llevar a cabo una validación de las variables que han sido homologadas, por tanto, se espera que las proporciones resultantes del censo y la encuesta estén cercanas entre sí.</p></li>
+<li><p><em>Aux_Agregado</em>: Esta es función permite obtener estimaciones a diferentes niveles de agregación, toma mucha relevancia cuando se realiza un proceso repetitivo.</p></li>
+</ul>
+<p><strong>Las funciones se puedes ejecutar dado que el proceso esta estandarizado</strong></p>
 </section>
 <section id="importando-datos" class="level3">
 <h3 class="anchored" data-anchor-id="importando-datos">Importando datos</h3>
+<p>Los datos empleados en esta ocasión corresponden a la ultima encuesta de hogares, la cual ha sido estandarizada por <em>CEPAL</em> y se encuentra disponible en <em>BADEHOG</em></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"0Funciones/funciones_mrp.R"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>encuesta_mrp <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/encuesta_ingreso.rds"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>tasa_desocupados <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/tasa_desocupacion.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>encuesta_mrp <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/encuesta_ingreso.rds"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>pobreza)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>La información auxiliar disponible ha sido extraída del censo (tasa de desocupación) e imágenes satelitales (luces nocturnas, uso del suelo urbano y uso del suelo cultivos)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tasa_desocupados <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/tasa_desocupacion.rds"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>statelevel_predictors_df <span class="ot">&lt;-</span> tasa_desocupados</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(statelevel_predictors_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+# Groups:   depto [6]
+  depto tasa_desocupacion F182013_stable_lights X2016_crops.coverfract…¹ X2016…²
+  &lt;chr&gt;             &lt;dbl&gt;                 &lt;dbl&gt;                    &lt;dbl&gt;   &lt;dbl&gt;
+1 01               0.0302                  6.36                     11.0   1.37 
+2 02               0.0350                  2.59                     12.7   0.792
+3 03               0.0325                  6.81                     17.2   1.08 
+4 04               0.0342                  3.43                     15.6   0.643
+5 05               0.0278                  4.28                     16.7   1.09 
+6 06               0.0310                  4.06                     20.0   0.819
+# … with abbreviated variable names ¹​X2016_crops.coverfraction,
+#   ²​X2016_urban.coverfraction</code></pre>
+</div>
+</div>
+<ul>
+<li><em>depto</em>: Corresponde al código asignado a la segunda división administrativa del país.</li>
+<li><em>tasa_desocupacion</em>: Información extraida del último censo del país.</li>
+<li><em>F182013_stable_lights</em>, <em>X2016_crops.coverfraction</em> y <em>X2016_urban.coverfraction</em> información satelital extraída de google earth engine.</li>
+</ul>
 </section>
 <section id="explorando-datos." class="level3">
 <h3 class="anchored" data-anchor-id="explorando-datos.">Explorando datos.</h3>
+<p>En todo ejercicio de investigación lo primero que debemos hacer es conocer nuestras bases de datos y la información disponible en esta.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(encuesta_mrp<span class="sc">$</span>ingreso)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(encuesta_mrp<span class="sc">$</span>ingreso)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -210,8 +268,14 @@ Max.
 
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>encuesta_mrp<span class="sc">$</span>ingreso <span class="ot">&lt;-</span> encuesta_mrp<span class="sc">$</span>ingreso <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(encuesta_mrp) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Se suma el valor de <span class="math inline">\(1\)</span> para eliminar los ceros de la variable.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>encuesta_mrp<span class="sc">$</span>ingreso <span class="ot">&lt;-</span> encuesta_mrp<span class="sc">$</span>ingreso <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La base de datos de la encuesta tiene la siguientes columnas: - <em>lp</em> y <em>li</em> lineas de pobreza y pobreza extrema definidas por CEPAL. - <em>área</em> división geográfica (Urbano y Rural). - <em>sexo</em> Hombre y Mujer. - <em>etnia</em> En estas variable se definen tres grupos interés: afrodescendientes, indígenas y Otros. - Años de escolaridad (<em>anoest</em>) - Rangos de edad (<em>edad</em>) - Factor de expansión por persona (<em>fep</em>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(encuesta_mrp) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -247,9 +311,6 @@ edad
 <th style="text-align:right;">
 fep
 </th>
-<th style="text-align:right;">
-pobreza
-</th>
 </tr>
 </thead>
 <tbody>
@@ -284,9 +345,6 @@ pobreza
 <td style="text-align:right;">
 232.1125
 </td>
-<td style="text-align:right;">
-0.4576861
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -318,9 +376,6 @@ pobreza
 </td>
 <td style="text-align:right;">
 232.1125
-</td>
-<td style="text-align:right;">
-0.4576861
 </td>
 </tr>
 <tr>
@@ -354,9 +409,6 @@ pobreza
 <td style="text-align:right;">
 232.1125
 </td>
-<td style="text-align:right;">
-0.4576861
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -388,9 +440,6 @@ pobreza
 </td>
 <td style="text-align:right;">
 232.1125
-</td>
-<td style="text-align:right;">
-0.8560038
 </td>
 </tr>
 <tr>
@@ -424,9 +473,6 @@ pobreza
 <td style="text-align:right;">
 232.1125
 </td>
-<td style="text-align:right;">
-0.8560038
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -458,9 +504,6 @@ pobreza
 </td>
 <td style="text-align:right;">
 232.1125
-</td>
-<td style="text-align:right;">
-0.8560038
 </td>
 </tr>
 </tbody>
@@ -469,50 +512,31 @@ pobreza
 </div>
 </div>
 </section>
-<section id="covariables-provenientes-del-censo-e-imagenes-satelitales" class="level3">
-<h3 class="anchored" data-anchor-id="covariables-provenientes-del-censo-e-imagenes-satelitales">Covariables provenientes del censo e imagenes satelitales</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>statelevel_predictors_df <span class="ot">&lt;-</span> tasa_desocupados</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(statelevel_predictors_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 5
-# Groups:   depto [6]
-  depto tasa_desocupacion F182013_stable_lights X2016_crops.coverfract…¹ X2016…²
-  &lt;chr&gt;             &lt;dbl&gt;                 &lt;dbl&gt;                    &lt;dbl&gt;   &lt;dbl&gt;
-1 01               0.0302                  6.36                     11.0   1.37 
-2 02               0.0350                  2.59                     12.7   0.792
-3 03               0.0325                  6.81                     17.2   1.08 
-4 04               0.0342                  3.43                     15.6   0.643
-5 05               0.0278                  4.28                     16.7   1.09 
-6 06               0.0310                  4.06                     20.0   0.819
-# … with abbreviated variable names ¹​X2016_crops.coverfraction,
-#   ²​X2016_urban.coverfraction</code></pre>
-</div>
-</div>
-</section>
 <section id="niveles-de-agregación-para-colapsar-encuesta" class="level3">
 <h3 class="anchored" data-anchor-id="niveles-de-agregación-para-colapsar-encuesta">Niveles de agregación para colapsar encuesta</h3>
+<p>Después de realizar una investigación en la literatura especializada y realizar estudios de simulación fue posible evidenciar que las predicciones obtenidas con la muestra sin agregar y la muestra agregada convergen a la media del dominio. Sin embargo, el realizar estas estimaciones con la muestra agregada reduce el tiempo computacional necesario para la convergencia del modelo. Con esto en mente se se realiza la identificación de las variables por las cuales se agregará la encuesta.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(n|pobreza|ingreso|lp|li|fep)"</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(encuesta_mrp),</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(n|pobreza|ingreso|lp|li|fep)"</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(encuesta_mrp),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="creando-base-con-la-encuesta-agregada" class="level3">
 <h3 class="anchored" data-anchor-id="creando-base-con-la-encuesta-agregada">Creando base con la encuesta agregada</h3>
+<p>El resultado de agregar la base de dato se muestra a continuación:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  encuesta_mrp <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by_at</span>(<span class="fu">all_of</span>(byAgrega)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">ingreso =</span> <span class="fu">mean</span>(ingreso),</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(encuesta_df_agg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  encuesta_mrp <span class="sc">%&gt;%</span>                    <span class="co"># Encuesta  </span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by_at</span>(<span class="fu">all_of</span>(byAgrega)) <span class="sc">%&gt;%</span>   <span class="co"># Agrupar por el listado de variables</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),                  <span class="co"># Número de observaciones</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">ingreso =</span> <span class="fu">mean</span>(ingreso),  <span class="co"># Ingreso medio de las observaciones</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span>     </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))                    <span class="co"># Ordenar la base.</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(encuesta_df_agg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -710,72 +734,705 @@ ingreso
 <section id="incorporando-covariables-a-la-encuesta-agregada" class="level3">
 <h3 class="anchored" data-anchor-id="incorporando-covariables-a-la-encuesta-agregada">Incorporando covariables a la encuesta agregada</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(encuesta_df_agg, statelevel_predictors_df, <span class="at">by =</span> <span class="st">"depto"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>encuesta_df_agg <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(encuesta_df_agg, statelevel_predictors_df, <span class="at">by =</span> <span class="st">"depto"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="definiendo-el-modelo-multinivel." class="level3">
 <h3 class="anchored" data-anchor-id="definiendo-el-modelo-multinivel.">Definiendo el modelo multinivel.</h3>
+<p>Después de haber ordenado la encuesta, podemos pasar a la definición del modelo.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">MC.cores=</span>parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">stan_lmer</span>(</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  ingreso <span class="sc">~</span> (<span class="dv">1</span> <span class="sc">|</span> depto) <span class="sc">+</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    area <span class="sc">+</span> sexo  <span class="sc">+</span> tasa_desocupacion <span class="sc">+</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>      F182013_stable_lights <span class="sc">+</span> </span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  X2016_crops.coverfraction <span class="sc">+</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  X2016_urban.coverfraction ,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                  <span class="at">weights =</span> n,</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> encuesta_df_agg,</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">chains =</span> <span class="dv">2</span>,</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">iter =</span> <span class="dv">200</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>                )</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(fit, <span class="at">file =</span> <span class="st">"Data/fit_ingresos.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">MC.cores=</span>parallel<span class="sc">::</span><span class="fu">detectCores</span>()) <span class="co"># Permite procesar en paralelo. </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">stan_lmer</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  ingreso <span class="sc">~</span>                               <span class="co"># Ingreso medio (Y)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">1</span> <span class="sc">|</span> depto) <span class="sc">+</span>                         <span class="co"># Efecto aleatorio (ud)</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    area  <span class="sc">+</span>                               <span class="co"># Efecto fijo (Variables X)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    sexo  <span class="sc">+</span> </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    tasa_desocupacion <span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    F182013_stable_lights <span class="sc">+</span> </span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    X2016_crops.coverfraction <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    X2016_urban.coverfraction ,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">weights =</span> n,            <span class="co"># Poderar dado que se agrega la encuesta. </span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> encuesta_df_agg, <span class="co"># Encuesta agregada </span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                  <span class="at">verbose =</span> <span class="cn">TRUE</span>,         <span class="co"># Muestre el avance del proceso</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                  <span class="at">chains =</span> <span class="dv">2</span>,             <span class="co"># Número de cadenas.</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">iter =</span> <span class="dv">200</span>               <span class="co"># Número de realizaciones de la cadena</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(fit, <span class="at">file =</span> <span class="st">"Data/fit_ingresos.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Después de esperar un tiempo prudente se obtiene el siguiente modelo.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/fit_ingresos.rds"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(fit)<span class="sc">$</span>depto</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+(Intercept)
+</th>
+<th style="text-align:right;">
+area1
+</th>
+<th style="text-align:right;">
+sexo2
+</th>
+<th style="text-align:right;">
+tasa_desocupacion
+</th>
+<th style="text-align:right;">
+F182013_stable_lights
+</th>
+<th style="text-align:right;">
+X2016_crops.coverfraction
+</th>
+<th style="text-align:right;">
+X2016_urban.coverfraction
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+01
+</td>
+<td style="text-align:right;">
+265.7428
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+02
+</td>
+<td style="text-align:right;">
+165.6680
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+03
+</td>
+<td style="text-align:right;">
+225.2981
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+04
+</td>
+<td style="text-align:right;">
+168.5985
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+05
+</td>
+<td style="text-align:right;">
+242.3533
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+06
+</td>
+<td style="text-align:right;">
+224.9903
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+07
+</td>
+<td style="text-align:right;">
+189.7947
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+08
+</td>
+<td style="text-align:right;">
+253.1588
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+09
+</td>
+<td style="text-align:right;">
+240.8655
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:right;">
+175.4682
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11
+</td>
+<td style="text-align:right;">
+211.6051
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:right;">
+232.8973
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+13
+</td>
+<td style="text-align:right;">
+223.1025
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14
+</td>
+<td style="text-align:right;">
+185.2134
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:right;">
+150.0853
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16
+</td>
+<td style="text-align:right;">
+240.1892
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17
+</td>
+<td style="text-align:right;">
+224.7241
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18
+</td>
+<td style="text-align:right;">
+222.6799
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+19
+</td>
+<td style="text-align:right;">
+195.8302
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:right;">
+354.7535
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+21
+</td>
+<td style="text-align:right;">
+216.1396
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+22
+</td>
+<td style="text-align:right;">
+200.7895
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+23
+</td>
+<td style="text-align:right;">
+273.0379
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24
+</td>
+<td style="text-align:right;">
+165.8873
+</td>
+<td style="text-align:right;">
+108.3382
+</td>
+<td style="text-align:right;">
+-13.34663
+</td>
+<td style="text-align:right;">
+-1430.014
+</td>
+<td style="text-align:right;">
+-2.818752
+</td>
+<td style="text-align:right;">
+-0.416197
+</td>
+<td style="text-align:right;">
+26.80334
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</section>
 </section>
 <section id="proceso-de-estimación-y-predicción" class="level1">
 <h1>Proceso de estimación y predicción</h1>
-<p>Por tiempo de compilación se realiza el cargue del modelo estimado.</p>
+<p>Obtener el modelo es solo el primer paso, ahora se debe realizar la predicción en el censo, el cual a sido previamente estandarizado. Ahora leemos el censo y filtramos los niveles que son de interés, por ejemplo niños menores de 4 años o personas sin información de escolaridad en el censo.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/fit_ingresos.rds"</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>stan_lmer
- family:       gaussian [identity]
- formula:      ingreso ~ (1 | depto) + area + sexo + tasa_desocupacion + F182013_stable_lights + 
-       X2016_crops.coverfraction + X2016_urban.coverfraction
- observations: 2402
-------
-                          Median  MAD_SD 
-(Intercept)                 194.4    43.1
-area1                       108.3     2.6
-sexo2                       -13.3     2.2
-tasa_desocupacion         -1430.0   805.1
-F182013_stable_lights        -2.8    12.6
-X2016_crops.coverfraction    -0.4     2.7
-X2016_urban.coverfraction    26.8    32.2
-
-Auxiliary parameter(s):
-      Median MAD_SD
-sigma 187.2    1.1 
-
-Error terms:
- Groups   Name        Std.Dev.
- depto    (Intercept) 113     
- Residual             187     
-Num. levels: depto 24 
-
-------
-* For help interpreting the printed output see ?print.stanreg
-* For info on the priors used see ?prior_summary.stanreg</code></pre>
-</div>
-</div>
-<section id="predicción-en-el-censo" class="level3">
-<h3 class="anchored" data-anchor-id="predicción-en-el-censo">Predicción en el censo</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>poststrat_df <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/poststrat_ingreso.RDS"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>anoest <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"99"</span>, <span class="st">"98"</span>) ) <span class="sc">%&gt;%</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(depto<span class="sc">:</span>X2016_urban.coverfraction,lp)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>poststrat_df <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>poststrat_df <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"Data/poststrat_ingreso.RDS"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>anoest <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"99"</span>, <span class="st">"98"</span>) ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(depto<span class="sc">:</span>X2016_urban.coverfraction,lp)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>poststrat_df <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1074,44 +1731,44 @@ lp
 </table>
 </div>
 </div>
-</section>
+<p>Note que la información de l censo esta agregada.</p>
 <section id="distribución-posterior." class="level3">
 <h3 class="anchored" data-anchor-id="distribución-posterior.">Distribución posterior.</h3>
+<p>Para obtener una distribución posterior de cada observación se hace uso de la función <em>posterior_epred</em> de la siguiente forma.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>epred_mat <span class="ot">&lt;-</span> <span class="fu">posterior_epred</span>(fit, <span class="at">newdata =</span> poststrat_df, <span class="at">type =</span> <span class="st">"response"</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(epred_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>epred_mat <span class="ot">&lt;-</span> <span class="fu">posterior_epred</span>(fit, <span class="at">newdata =</span> poststrat_df, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(epred_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]   200 10250</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(poststrat_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(poststrat_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 10250    13</code></pre>
 </div>
 </div>
+<p>Es importante notar que la predicción para cada observación se obtiene por columna y cada una posee la longitud de la cadena.</p>
 </section>
 <section id="evaluando-las-predicciones-resultantes" class="level3">
 <h3 class="anchored" data-anchor-id="evaluando-las-predicciones-resultantes">Evaluando las predicciones resultantes</h3>
+<p>Por ser una predicción en dominios no observados, es posible obtener valores por fuera del domino de la variable (valores negativos), los cuales deben ser ajustados de forma manual.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## validacion de los valores posteriores</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">rowMeans</span>(epred_mat))</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">colMeans</span>(epred_mat))</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">as.numeric</span>(epred_mat))</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(<span class="fu">as.numeric</span>(epred_mat))</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(epred_mat[<span class="fu">which</span>(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="do">## validación de los valores posteriores</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(<span class="fu">as.numeric</span>(epred_mat))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(epred_mat[<span class="fu">which</span>(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Igualando valores negativos a cero.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>epred_mat[(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)]<span class="ot">&lt;-</span><span class="dv">0</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(epred_mat[<span class="fu">which</span>(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>epred_mat[(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)]<span class="ot">&lt;-</span><span class="dv">0</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(epred_mat[<span class="fu">which</span>(epred_mat <span class="sc">&lt;</span> <span class="dv">0</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0</code></pre>
 </div>
 </div>
-<p>Obteniendo las lineas de pobreza por cada post-estrato</p>
+<p>Como el interés es realizar comparaciones entre los paises de la región se presenta la estimación del ingreso medio en términos de lineas de pobreza. Para esto procedemos así:<br>
+Obteniendo las lineas de pobreza por cada post-estrato</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>(lp <span class="ot">&lt;-</span> encuesta_mrp <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(area, lp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>(lp <span class="ot">&lt;-</span> encuesta_mrp <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(area, lp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1148,30 +1805,28 @@ area
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span>   poststrat_df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">orden =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(orden, area) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">left_join</span>(lp, <span class="at">by =</span> <span class="st">"area"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">arrange</span>(orden, <span class="at">desc =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(lp)</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> lp<span class="sc">$</span>lp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span>   poststrat_df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">orden =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(orden, area) <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">left_join</span>(lp, <span class="at">by =</span> <span class="st">"area"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">arrange</span>(orden, <span class="at">desc =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(lp)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> lp<span class="sc">$</span>lp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ingreso en términos de lineas de pobreza.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>epred_mat <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">t</span>(epred_mat)<span class="sc">/</span>lp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="ingreso-en-términos-de-lineas-de-pobreza." class="level3">
-<h3 class="anchored" data-anchor-id="ingreso-en-términos-de-lineas-de-pobreza.">Ingreso en términos de lineas de pobreza.</h3>
+<section id="estimación-del-ingreso-medio-nacional" class="level2">
+<h2 class="anchored" data-anchor-id="estimación-del-ingreso-medio-nacional">Estimación del ingreso medio NACIONAL</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>epred_mat <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">t</span>(epred_mat)<span class="sc">/</span>lp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="estimación-del-ingreso-medio-nacional" class="level3">
-<h3 class="anchored" data-anchor-id="estimación-del-ingreso-medio-nacional">Estimación del ingreso medio NACIONAL</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> poststrat_df<span class="sc">$</span>n</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> poststrat_df<span class="sc">$</span>n</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>(temp_ing <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1199,21 +1854,22 @@ mrp_estimate_se
 </table>
 </div>
 </div>
-</section>
+<p>El resultado nos indica que el ingreso medio nacional es 2.43 lineas de pobreza</p>
 <section id="estimación-para-depto-01-particular." class="level3">
 <h3 class="anchored" data-anchor-id="estimación-para-depto-01-particular.">Estimación para depto == “01” particular.</h3>
+<p>Es importante siempre conservar el orden de la base, dado que relación entre la predicción y el censo en uno a uno.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">filter</span>(temp,depto<span class="sc">==</span><span class="st">"01"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n,Posi)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[,temp<span class="sc">$</span>Posi]</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">filter</span>(temp, depto <span class="sc">==</span> <span class="st">"01"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n, Posi)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[, temp<span class="sc">$</span>Posi]</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>(temp_ing <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1241,21 +1897,22 @@ mrp_estimate_se
 </table>
 </div>
 </div>
+<p>El resultado nos indica que el ingreso medio en el depto 1 es 2.99 lineas de pobreza</p>
 </section>
 <section id="estimación-para-depto-01-y-sexo-1" class="level3">
 <h3 class="anchored" data-anchor-id="estimación-para-depto-01-y-sexo-1">Estimación para depto == “01” y sexo == “1”</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">filter</span>(temp,depto<span class="sc">==</span><span class="st">"01"</span>, sexo <span class="sc">==</span> <span class="st">"1"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n,Posi)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[,temp<span class="sc">$</span>Posi]</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">filter</span>(temp, depto <span class="sc">==</span> <span class="st">"01"</span>, sexo <span class="sc">==</span> <span class="st">"1"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n, Posi)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[, temp<span class="sc">$</span>Posi]</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>(temp_ing <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1283,21 +1940,23 @@ mrp_estimate_se
 </table>
 </div>
 </div>
+<p>El resultado nos indica que el ingreso medio de los hombres en el depto 1 es 3.06 lineas de pobreza</p>
 </section>
 <section id="estimación-para-depto-01-sexo-1-y-area-1" class="level3">
 <h3 class="anchored" data-anchor-id="estimación-para-depto-01-sexo-1-y-area-1">Estimación para depto == “01”, sexo == “1” y area == “1”</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> <span class="fu">filter</span>(temp,depto<span class="sc">==</span><span class="st">"01"</span>, sexo <span class="sc">==</span> <span class="st">"1"</span>, area <span class="sc">==</span> <span class="st">"1"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n,Posi)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[,temp<span class="sc">$</span>Posi]</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span> poststrat_df <span class="sc">%&gt;%</span>  <span class="fu">mutate</span>(<span class="at">Posi =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">n</span>())</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>temp <span class="ot">&lt;-</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(temp, depto <span class="sc">==</span> <span class="st">"01"</span>, sexo <span class="sc">==</span> <span class="st">"1"</span>, area <span class="sc">==</span> <span class="st">"1"</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(n, Posi)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>n_filtered <span class="ot">&lt;-</span> temp<span class="sc">$</span>n</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>temp_epred_mat <span class="ot">&lt;-</span> epred_mat[, temp<span class="sc">$</span>Posi]</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Estimando el CME</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>mrp_estimates <span class="ot">&lt;-</span> temp_epred_mat <span class="sc">%*%</span> n_filtered <span class="sc">/</span> <span class="fu">sum</span>(n_filtered)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>(temp_ing <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate =</span> <span class="fu">mean</span>(mrp_estimates),</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">mrp_estimate_se =</span> <span class="fu">sd</span>(mrp_estimates)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1325,13 +1984,15 @@ mrp_estimate_se
 </table>
 </div>
 </div>
+<p>El resultado nos indica que el ingreso medio de los hombres en el área urbana del depto 1 es 3.23 lineas de pobreza</p>
+<p>Después de comprender la forma en que se realiza la estimación de los dominios no observados procedemos el uso de la función <em>Aux_Agregado</em> que es desarrollada para este fin.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Resultados nacionales ---------------------------------------------------</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>(mrp_estimate_Ingresolp <span class="ot">&lt;-</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Aux_Agregado</span>(<span class="at">poststrat =</span> poststrat_df,</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">epredmat =</span> epred_mat,</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">byMap =</span> <span class="cn">NULL</span>)</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Resultados nacionales ---------------------------------------------------</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>(mrp_estimate_Ingresolp <span class="ot">&lt;-</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Aux_Agregado</span>(<span class="at">poststrat =</span> poststrat_df,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">epredmat =</span> epred_mat,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">byMap =</span> <span class="cn">NULL</span>)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table>
@@ -1365,20 +2026,19 @@ Nacional
 </table>
 </div>
 </div>
+<p>El resultado nos indica que el ingreso medio nacional es 2 lineas de pobreza</p>
 </section>
-<section id="automatizando-el-proceso" class="level2">
-<h2 class="anchored" data-anchor-id="automatizando-el-proceso">Automatizando el proceso</h2>
 <section id="niveles-de-post-estrato" class="level3">
 <h3 class="anchored" data-anchor-id="niveles-de-post-estrato">Niveles de Post-estrato</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(X|F|n|pobreza|ingreso|tasa_desocupacion|epred_mat|depto|lp)"</span>,</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(poststrat_df),</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>byAgrega</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pattern =</span>  <span class="st">"^(X|F|n|pobreza|ingreso|tasa_desocupacion|epred_mat|depto|lp)"</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">names</span>(poststrat_df),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">invert =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="cn">TRUE</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>byAgrega</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "area"         "sexo"         "edad"         "etnia"        "anoest"      
 [6] "discapacidad"</code></pre>
@@ -1388,19 +2048,19 @@ Nacional
 <section id="organizando-los-post-estato" class="level3">
 <h3 class="anchored" data-anchor-id="organizando-los-post-estato">Organizando los post-estato</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">combn</span>(byAgrega, <span class="dv">2</span>))</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="st">"depto"</span>,<span class="st">"depto"</span> ), byAgrega)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">combn</span>(byAgrega, <span class="dv">2</span>))</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>byAgrega <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="st">"depto"</span>,<span class="st">"depto"</span> ), byAgrega)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="realizando-la-estimación" class="level3">
 <h3 class="anchored" data-anchor-id="realizando-la-estimación">Realizando la estimación</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>mrp_ECM <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(byAgrega), <span class="cf">function</span>(ii) {</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Aux_Agregado</span>(poststrat_df,</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">epredmat =</span> epred_mat,</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">byMap =</span> <span class="fu">c</span>(<span class="st">"depto"</span>, byAgrega[ii,]))</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>mrp_ECM <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(byAgrega), <span class="cf">function</span>(ii) {</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Aux_Agregado</span>(poststrat_df,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">epredmat =</span> epred_mat,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">byMap =</span> <span class="fu">c</span>(<span class="st">"depto"</span>, byAgrega[ii,]))</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
      ############################# NOTA #################################
@@ -1434,12 +2094,12 @@ Nacional
 <section id="asignando-nombre-las-tablas-de-salida" class="level3">
 <h3 class="anchored" data-anchor-id="asignando-nombre-las-tablas-de-salida">Asignando nombre las tablas de salida</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>nom_tabs <span class="ot">&lt;-</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"depto"</span>, <span class="fu">apply</span>(byAgrega[<span class="sc">-</span><span class="dv">1</span>, ],</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">MARGIN =</span> <span class="dv">1</span>,</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                   paste0, <span class="at">collapse =</span> <span class="st">"_"</span>))</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mrp_ECM) <span class="ot">&lt;-</span> nom_tabs</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(mrp_ECM,head)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>nom_tabs <span class="ot">&lt;-</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"depto"</span>, <span class="fu">apply</span>(byAgrega[<span class="sc">-</span><span class="dv">1</span>, ],</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">MARGIN =</span> <span class="dv">1</span>,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                   paste0, <span class="at">collapse =</span> <span class="st">"_"</span>))</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mrp_ECM) <span class="ot">&lt;-</span> nom_tabs</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(mrp_ECM,head)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$depto
 # A tibble: 6 × 3

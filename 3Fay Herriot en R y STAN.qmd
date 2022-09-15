@@ -91,8 +91,8 @@ ggplot(Estimacion_dir,
        aes(x =  fct_reorder(canton,nd,.desc = TRUE), 
            y = thetahat_se)) +
   geom_point() +
-  theme_bw(base_size = 20) +
-  labs(x = "Canton", y = "se", title = "s") +
+  theme_classic(base_size = 20) +
+  labs(x = "Canton", y = "se") +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 
@@ -101,14 +101,19 @@ ggplot(Estimacion_dir,
 Dividiendo los datos en observados y NO observados.
 
 ```{r}
+## Estimaciones directas
 data_dir <- Estimacion_dir %>%
   filter(!is.na(thetahat) ,!is.na(tasa_desocupacion),
          thetahat > 0)
-
+## No observados
 data_syn <-
   Estimacion_dir %>% anti_join(data_dir %>% select(canton)) %>%
   filter(!is.na(tasa_desocupacion))
+```
 
+Correlación de la estimación directa con las covariables.
+
+```{r}
 cor(data_dir$thetahat, data_dir$tasa_desocupacion)
 cor(data_dir$thetahat, log(data_dir$stable_lights))
 cor(data_dir$thetahat, log(data_dir$crops.coverfraction))
@@ -118,18 +123,24 @@ cor(data_dir$thetahat, log(data_dir$urban.coverfraction))
 ### Modelo bayesiano
 
 $$
-Y \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
-\mu = \boldsymbol{X\beta} + V
-$$ donde $V \sim N(0 , \sigma_v)$.
+\begin{eqnarray*}
+Y\mid\mu,\sigma_{e} & \sim & N\left(\mu,\sigma_{e}\right)\\
+\mu & = & \boldsymbol{X\beta}+V
+\end{eqnarray*}
+$$
+
+donde $V \sim N(0 , \sigma_v)$.
 
 Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
-\beta_k \sim N(\mu, \tau^2)\\
-\sigma^2_v \sim Inversa-Gamma(\alpha_1,\alpha_2)
+\begin{eqnarray*}
+\beta_k & \sim   & N(\mu_0, \tau^2_0)\\
+\sigma^2_v &\sim & Inversa-Gamma(\alpha_1,\alpha_2)
+\end{eqnarray*}
 $$
 
-Creando código de `STAN`
+El modelo propuesto se escibre en `STAN` de la siguiente forma.
 
 ```{r, eval=FALSE}
 data {
@@ -142,8 +153,6 @@ data {
   vector[N1] sigma_e; // known variances
 }
 
-// The parameters accepted by the model. Our model
-// accepts two parameters 'mu' and 'sigma'.
 parameters {
   vector[p] beta;       // coefficients for predictors
   real<lower=0> sigma2_v;
@@ -176,27 +185,33 @@ generated quantities{
 
 ```
 
-Preparando el código de `STAN`
+Para ejcutar el modelo debemos cargar el código de `STAN` de la siguiente forma
 
 ```{r, eval=TRUE}
 library(cmdstanr)
 fit_FH_Nornal <- cmdstan_model("Data/modelosStan/FH_normal.stan")
 ```
 
-Organizando datos covariables para `STAN`
+Definiendo la matrix de datos para `STAN`
 
 ```{r}
+## Dominios observados
 Xdat <-
   model.matrix(
     thetahat ~ provincia + tasa_desocupacion,
     data = data_dir
   )
-
+## Dominios no observados
 Xs <-
   model.matrix(
     canton ~ provincia + tasa_desocupacion ,
     data = data_syn
   )
+```
+
+Para realizar la predicción del modelo es necesario validar que $X$ y $Xs$ deben tener la mismas columnas en el mismo orden.
+
+```{r}
 temp <- setdiff(colnames(Xdat),colnames(Xs))
 
 temp <- matrix(
@@ -208,10 +223,9 @@ temp <- matrix(
 
 Xs <- cbind(Xs,temp)[,colnames(Xdat)]
 
-
 ```
 
-Preparando los datos para `STAN`
+El modelo de `STAN` require los datos organizados en una lista de `R`.
 
 ```{r}
 sample_data <- list(
@@ -225,7 +239,7 @@ sample_data <- list(
                     )
 ```
 
-Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
+Para ejecutar `STAN` en `R` tenemos la librería *cmdstanr*
 
 ```{r, eval = TRUE, message=FALSE}
 model_FH_Nornal <-
@@ -233,6 +247,8 @@ model_FH_Nornal <-
     data = sample_data,
     chains = 4,
     parallel_chains = 4,
+    iter_warmup = 200,
+    iter_sampling = 200,
     seed = 1234,
     refresh = 1000
   )
@@ -249,9 +265,11 @@ library(patchwork)
 N1 <- nrow(data_dir)
 
 # Predicción de la estimación (Observados) 
+
 y_pred_B <- model_FH_Nornal$draws(variables = "theta", format = "matrix")
 rowsrandom <- sample(nrow(y_pred_B), 100)
 y_pred2 <- y_pred_B[rowsrandom, 1:N1]
+
 # Comparando predicción con las cadenas
 ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) 
 ```
@@ -345,33 +363,39 @@ Transformación arcoseno
 
 $$
 \hat{z}_d = arcsin\left( \sqrt{ \hat{\theta}_d} \right)
-$$ donde $$
+$$ donde
+
+$$
 Var\left( \hat{z}_d \right) = \frac{\widehat{DEFF}_d}{4\times n_d} = \frac{1}{4\times n_{d,efectivo} }
 $$
 
-Estimación directa
+Realizando estos cálculo a la base de la estimación directa:
 
 ```{r}
 data_dir %<>% mutate(
-  n_effec = nd/thetahat_deff,
-  varhat = 1/(4*n_effec),
-  T_thetahat = asin(sqrt(thetahat))
+  n_effec = nd/thetahat_deff,     ## n efectivo
+  varhat = 1/(4*n_effec),         ## varianza para zd  
+  T_thetahat = asin(sqrt(thetahat)) ## creando zd
   )
 
 ```
 
 ### Modelo bayesiano
 
+El modelo estaría definido de la siguiente forma:
+
 $$
-Z \mid \mu,\sigma_e \sim N(\mu, \sigma_e)\\
-\mu = \boldsymbol{X\beta} + V \\
-\theta = \left(sin(\mu)\right)^2
+\begin{eqnarray*}
+Z \mid \mu,\sigma_e &  \sim  & N(\mu, \sigma_e)\\
+\mu & = & \boldsymbol{X\beta} + V \\
+\theta & = &  \left(sin(\mu)\right)^2
+\end{eqnarray*}
 $$ donde $V \sim N(0 , \sigma_v)$.
 
 Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
-\beta_k \sim N(\mu, \tau^2)\\
+\beta_k \sim N(\mu_0, \tau^2_0)\\
 \sigma^2_v \sim Inversa-Gamma(\alpha_1,\alpha_2)
 $$
 
@@ -450,8 +474,8 @@ Para ejecutar `STAN` en R tenemos la librería *cmdstanr*
 model_FH_arcsin_Nornal <-
   fit_FH_arcsin_Nornal$sample(
     data = sample_data,
-    iter_warmup = 1000,
-    iter_sampling = 1000,
+    iter_warmup = 200,
+    iter_sampling = 200,
     chains = 4,
     parallel_chains = 4,
     seed = 1234,
@@ -460,15 +484,18 @@ model_FH_arcsin_Nornal <-
 
 ```
 
-Comparando resultados.
+La distribución posterior obtenida es la siguientes
 
 ```{r, eval=TRUE}
-y_pred_B <- model_FH_arcsin_Nornal$draws(variables = "theta", format = "matrix")
+y_pred_B <-
+  model_FH_arcsin_Nornal$draws(variables = "theta", format = "matrix")
 rowsrandom <- sample(nrow(y_pred_B), 100)
 y_pred2 <- y_pred_B[rowsrandom, 1:N1]
 ppc_dens_overlay(y = as.numeric(data_dir$thetahat), y_pred2) +
-  xlim(-0.2,1.2)
+  xlim(-0.2, 1.2)
 ```
+
+Los resultados muestran que los valores estan sobre la linea de 45 grados
 
 ```{r, eval=TRUE}
 library(ggplot2)
@@ -496,12 +523,14 @@ ggplot(data = data_syn, aes(x = pred_arcsin)) +
   theme_bw(base_size = 20)
 ```
 
-Estimación de los parámetros
+Resultados de la estimación de $\sigma^2_v$
 
 ```{r, eval=TRUE}
 model_FH_arcsin_Nornal$summary(
   variables = c("sigma2_v"))
 ```
+
+Evaluación de las cadenas
 
 ```{r, eval=TRUE}
 library(posterior)
@@ -513,24 +542,32 @@ library(bayesplot)
 
 # Estimación de Fay Herriot beta
 
+Una forma natural de modelar la variable es mediante la distribución beta, dado que su dominio se encuentra en el intervalo
+
 ### Modelo bayesiano
 
 $$
-Y \mid a,b \sim beta(a, b)\\
-a = \theta * \phi\\
-b = (1 - \theta) * \phi\\
+\begin{eqnarray*}
+Y \mid a,b & \sim & beta(a, b)\\
+a &=& \theta \times \phi\\
+b &=& (1 - \theta) \times \phi\\
+\end{eqnarray*}
 $$ donde
 
 $$
-\theta = \frac{\exp{\left(\mu\right)}}{ 1+ \exp{\left(\mu\right)}}\\   
-\mu = \boldsymbol{X\beta} + V 
+\begin{eqnarray*}
+\theta &= &\frac{\exp{\left(\mu\right)}}{ 1+ \exp{\left(\mu\right)}}\\ \\   
+\mu &=& \boldsymbol{X\beta} + V 
+\end{eqnarray*}
 $$ con $V \sim N(0 , \sigma_v)$ y \$\phi = \$
 
 Las distribuciones previas para $\boldsymbol{\beta}$ y $\sigma^2_v$
 
 $$
-\beta_k \sim N(\mu, \tau^2)\\
-\sigma^2_v \sim Inversa-Gamma(\alpha_1,\alpha_2)
+\begin{eqnarray*}
+\beta_k &\sim& N(\mu_0, \tau^2_0)\\
+\sigma^2_v &\sim& Inversa-Gamma(\alpha_1,\alpha_2)
+\end{eqnarray*}
 $$
 
 Creando código de `STAN`
@@ -584,13 +621,7 @@ model {
 }
 
 generated quantities {
-  vector[N2] y_pred;
-  vector[N2] thetapred;
-
-  for (i in 1:N2) {
-    y_pred[i] = normal_rng(Xs[i] * beta, sigma_v);
-    thetapred[i] = inv_logit(y_pred[i]);
-  }
+// Revisar
 }
   
 
